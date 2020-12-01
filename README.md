@@ -15,8 +15,8 @@ command ::=   <assignment> ";"
           |   <while> ";"
           |   <skip> ";"
 
-assignment ::=    <identifier> "=" <aexp>
-            |     <identifier> "=" <bexp>
+assignment ::=   "var" <identifier> "=" <aexp>
+            |    "var" <identifier> "=" <bexp>
 
 ifThenElse ::=    "if" (<bexp>) "then" <program> "endif"
             |     "if" (<bexp>) "then" <program> "else" <program> "endif"
