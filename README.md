@@ -1,4 +1,6 @@
+<p align="center" width="100%">
 <img src="IMPure.jpg" width="350">
+</p>
 
 # IMPure
 A simple interpreter for the IMP language written in Haskell
