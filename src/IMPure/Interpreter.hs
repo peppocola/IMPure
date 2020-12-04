@@ -47,8 +47,8 @@ commandsExec e (Skip : cs) = commandsExec e cs
 commandsExec e ((VariableDeclaration s ex) : cs) =
   case aexpEval e ex of
     Legal ex' -> case get e s of
-      Just _ -> commandsExec (insert e s ex') cs
-      Nothing -> throw (MultipleDeclaration s)
+      Just _ -> throw (MultipleDeclaration s)
+      Nothing -> commandsExec (insert e s ex') cs
     Error er -> throw er -- aexp is invalid
 commandsExec e ((Assignment s ex) : cs) =
   case get e s of
