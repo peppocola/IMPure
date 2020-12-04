@@ -1,57 +1,69 @@
 module Interpreter where
 
-import Dict (Dict, empty, insert, get)
+import Control.Exception (throw)
+import Dict (Dict, empty, get, insert)
+import Exception (InterpreterException (..), Result (..))
 import Grammar
+  ( AExp (..),
+    BExp (..),
+    Command (..),
+    Operator (..),
+    Program (..),
+  )
 
 type Env = Dict String Int
 
-emptyState:: Env
+emptyState :: Env
 emptyState = empty
 
-aexpEval:: Env -> AExp -> Maybe Int
-aexpEval _ (Constant i) = Just i
-aexpEval e (AVariable s) = get e s --Only way to reach Nothing if the variable is not in the Env
-aexpEval e (Add a b) = pure (+) <*> (aexpEval e a) <*> (aexpEval e b) --Applicative
-aexpEval e (Sub a b) = pure (-) <*> (aexpEval e a) <*> (aexpEval e b)
-aexpEval e (Mul a b) = pure (*) <*> (aexpEval e a) <*> (aexpEval e b)
+aexpEval :: Env -> AExp -> Result Int
+aexpEval _ (Constant i) = Legal i
+aexpEval e (AVariable s) =
+  case get e s of
+    Just v -> Legal v
+    Nothing -> Error (UndeclearedVariable s) --Only way to reach Nothing if the variable is not in the Env
+aexpEval e (Add a b) = (+) <$> aexpEval e a <*> aexpEval e b --Applicative
+aexpEval e (Sub a b) = (-) <$> aexpEval e a <*> aexpEval e b
+aexpEval e (Mul a b) = (*) <$> aexpEval e a <*> aexpEval e b
 
-bexpEval:: Env -> BExp -> Maybe Bool
-bexpEval _ (Boolean b) = Just b
+bexpEval :: Env -> BExp -> Result Bool
+bexpEval _ (Boolean b) = Legal b
 bexpEval e (Not b) = not <$> bexpEval e b --Functor
-bexpEval e (Or a b) = pure (||) <*> (bexpEval e a) <*> (bexpEval e b) --Applicative
-bexpEval e (And a b) = pure (&&) <*> (bexpEval e a) <*> (bexpEval e b)
-bexpEval e (Comparison a b op) = compEval e a b op 
+bexpEval e (Or a b) = (||) <$> bexpEval e a <*> bexpEval e b --Applicative
+bexpEval e (And a b) = (&&) <$> bexpEval e a <*> bexpEval e b
+bexpEval e (Comparison a b op) = compEval e a b op
 
-compEval:: Env -> AExp -> AExp -> Operator -> Maybe Bool
-compEval e a b (Lt) = pure (<) <*> (aexpEval e a) <*> (aexpEval e b)
-compEval e a b (Le) = pure (<=) <*> (aexpEval e a) <*> (aexpEval e b)
-compEval e a b (Gt) = pure (>) <*> (aexpEval e a) <*> (aexpEval e b)
-compEval e a b (Ge) = pure (>=) <*> (aexpEval e a) <*> (aexpEval e b)
-compEval e a b (Eq) = pure (==) <*> (aexpEval e a) <*> (aexpEval e b)
-compEval e a b (Neq) = pure (/=) <*> (aexpEval e a) <*> (aexpEval e b)
+compEval :: Env -> AExp -> AExp -> Operator -> Result Bool
+compEval e a b Lt = (<) <$> aexpEval e a <*> aexpEval e b
+compEval e a b Le = (<=) <$> aexpEval e a <*> aexpEval e b
+compEval e a b Gt = (>) <$> aexpEval e a <*> aexpEval e b
+compEval e a b Ge = (>=) <$> aexpEval e a <*> aexpEval e b
+compEval e a b Eq = (==) <$> aexpEval e a <*> aexpEval e b
+compEval e a b Neq = (/=) <$> aexpEval e a <*> aexpEval e b
 
-commandsExec:: Env -> [Command] -> Env
+commandsExec :: Env -> [Command] -> Env
 commandsExec e [] = e
 commandsExec e (Skip : cs) = commandsExec e cs
-commandsExec e ((VariableDeclaration s ex) : cs) = 
-    case aexpEval e ex of 
-        Just ex' -> commandsExec (insert e s ex') cs -- Multiple declaration of same variable allowed since there's no check
-        Nothing -> commandsExec e cs -- Dumb assumption
+commandsExec e ((VariableDeclaration s ex) : cs) =
+  case aexpEval e ex of
+    Legal ex' -> commandsExec (insert e s ex') cs -- Multiple declaration of same variable allowed since there's no check
+    Error er -> throw er -- aexp is invalid
 commandsExec e ((Assignment s ex) : cs) =
-    case get e s of
-        Just v -> commandsExec (insert e s ex') cs -- variable present
-            where Just ex' = aexpEval e ex
-        Nothing -> commandsExec e cs -- undecleared variable (Dumb assumption) ignore assignment
-commandsExec e ((IfThenElse b nc nc') : cs) = 
-    case bexpEval e b of
-        Just True -> commandsExec e (nc ++ cs)
-        Just False -> commandsExec e (nc'++ cs)
-        Nothing -> commandsExec e cs --bexp is invalid so we should propagate error but we ignore (Dumb assumption)
+  case get e s of
+    Just _ -> commandsExec (insert e s ex') cs
+      where
+        Legal ex' = aexpEval e ex
+    Nothing -> throw (UndeclearedVariable s)
+commandsExec e ((IfThenElse b nc nc') : cs) =
+  case bexpEval e b of
+    Legal True -> commandsExec e (nc ++ cs)
+    Legal False -> commandsExec e (nc' ++ cs)
+    Error er -> throw er
 commandsExec e ((While b c) : cs) =
-    case bexpEval e b of
-        Just True -> commandsExec e (c ++ [(While b c)] ++ cs)
-        Just False -> commandsExec e cs
-        Nothing -> commandsExec e cs --bexp is invalid so we should propagate error but we ignore (Dumb assumption)
+  case bexpEval e b of
+    Legal True -> commandsExec e (c ++ [While b c] ++ cs)
+    Legal False -> commandsExec e cs
+    Error er -> throw er
 
-programExec:: Env -> Program -> Env
+programExec :: Env -> Program -> Env
 programExec e (Program c) = commandsExec e c

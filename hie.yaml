@@ -1,0 +1,4 @@
+cradle:
+  stack:
+    - path: "./app"
+      component: "IMPure:exe:IMPure-exe"

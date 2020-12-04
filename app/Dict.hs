@@ -1,7 +1,7 @@
 module Dict where
 
 newtype Dict key value = Dict [(key, value)]
-    deriving Show
+  deriving (Show)
 
 --get an empty dictionary
 empty :: (Eq key) => Dict key value

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3478f29cae725e541c2c469165ebab9c2d148ccbabe1666205804242ac9c03e9
+-- hash: 0b8af5fa9c8ad37aebdf61c6cd9b23cff0ed3b72f41874b0e685736089e4c851
 
 name:           IMPure
 version:        0.1.0.0
@@ -25,19 +25,11 @@ source-repository head
   type: git
   location: https://github.com/githubuser/IMPure
 
-library
-  other-modules:
-      Paths_IMPure
-  hs-source-dirs:
-      src
-  build-depends:
-      base >=4.7 && <5
-  default-language: Haskell2010
-
 executable IMPure-exe
   main-is: Main.hs
   other-modules:
       Dict
+      Exception
       Grammar
       Interpreter
       Paths_IMPure
@@ -45,8 +37,7 @@ executable IMPure-exe
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      IMPure
-    , base >=4.7 && <5
+      base >=4.7 && <5
   default-language: Haskell2010
 
 test-suite IMPure-test
