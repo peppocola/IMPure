@@ -4,14 +4,14 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0b8af5fa9c8ad37aebdf61c6cd9b23cff0ed3b72f41874b0e685736089e4c851
+-- hash: fed188fd8a11097d74d130d117a2567e33cfb248ee03426808cb01bc5b280454
 
 name:           IMPure
 version:        0.1.0.0
 description:    Please see the README on GitHub at <https://github.com/githubuser/IMPure#readme>
-homepage:       https://github.com/githubuser/IMPure#readme
-bug-reports:    https://github.com/githubuser/IMPure/issues
-author:         Author name here
+homepage:       https://github.com/peppocola/IMPure#readme
+bug-reports:    https://github.com/peppocola/IMPure/issues
+author:         Giuseppe Colavito
 maintainer:     example@example.com
 copyright:      2020 Author name here
 license:        BSD3
@@ -23,21 +23,32 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/IMPure
+  location: https://github.com/peppocola/IMPure
+
+library
+  exposed-modules:
+      IMPure.Dict
+      IMPure.Exception
+      IMPure.Grammar
+      IMPure.Interpreter
+  other-modules:
+      Paths_IMPure
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+  default-language: Haskell2010
 
 executable IMPure-exe
   main-is: Main.hs
   other-modules:
-      Dict
-      Exception
-      Grammar
-      Interpreter
       Paths_IMPure
   hs-source-dirs:
       app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
   build-depends:
-      base >=4.7 && <5
+      IMPure
+    , base >=4.7 && <5
   default-language: Haskell2010
 
 test-suite IMPure-test

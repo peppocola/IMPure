@@ -1,8 +1,8 @@
 name:                IMPure
 version:             0.1.0.0
-github:              "githubuser/IMPure"
+github:              "peppocola/IMPure"
 license:             BSD3
-author:              "Author name here"
+author:              "Giuseppe Colavito"
 maintainer:          "example@example.com"
 copyright:           "2020 Author name here"
 
@@ -22,6 +22,9 @@ description:         Please see the README on GitHub at <https://github.com/gith
 dependencies:
 - base >= 4.7 && < 5
 
+library:
+  source-dirs: src
+
 executables:
   IMPure-exe:
     main:                Main.hs
@@ -30,6 +33,9 @@ executables:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+    - -Wall
+    dependencies:
+    - IMPure
 
 tests:
   IMPure-test:

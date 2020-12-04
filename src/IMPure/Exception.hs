@@ -1,4 +1,4 @@
-module Exception where
+module IMPure.Exception where
 
 import Control.Exception (Exception)
 import Text.Printf (printf)

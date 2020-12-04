@@ -1,6 +1,6 @@
 -- Grammar.hs contains the structures for the internal representation of
 -- the data.
-module Grammar where
+module IMPure.Grammar where
 
 newtype Program
   = Program [Command]

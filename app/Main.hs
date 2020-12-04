@@ -1,13 +1,13 @@
 module Main where
 
-import Grammar
+import IMPure.Grammar
   ( AExp (AVariable, Add, Constant, Mul),
     BExp (Comparison),
     Command (Assignment, VariableDeclaration, While),
     Operator (Le),
     Program (Program),
   )
-import Interpreter
+import IMPure.Interpreter
   ( emptyState,
     programExec,
   )

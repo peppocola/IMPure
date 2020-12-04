@@ -1,4 +1,10 @@
 cradle:
   stack:
+    - path: "./src"
+      component: "IMPure:lib"
+      
     - path: "./app"
       component: "IMPure:exe:IMPure-exe"
+
+    - path: "./test"
+      component: "IMPure:test:IMPure-test"

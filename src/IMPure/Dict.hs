@@ -1,4 +1,4 @@
-module Dict where
+module IMPure.Dict where
 
 newtype Dict key value = Dict [(key, value)]
   deriving (Show)

@@ -1,9 +1,9 @@
-module Interpreter where
+module IMPure.Interpreter where
 
 import Control.Exception (throw)
-import Dict (Dict, empty, get, insert)
-import Exception (InterpreterException (..), Result (..))
-import Grammar
+import IMPure.Dict (Dict, empty, get, insert)
+import IMPure.Exception (InterpreterException (..), Result (..))
+import IMPure.Grammar
   ( AExp (..),
     BExp (..),
     Command (..),
