@@ -7,16 +7,11 @@ data Program
     deriving Show
 
 data Command
-    = VariableDeclaration String Expression
-    | Assignment String Expression
+    = VariableDeclaration String AExp
+    | Assignment String AExp
     | IfThenElse BExp [Command] [Command]
     | While BExp [Command]
     | Skip
-    deriving Show
-
-data Expression
-    = ArithmeticExpression AExp
-    | BooleanExpression BExp
     deriving Show
 
 data AExp
@@ -29,7 +24,6 @@ data AExp
 
 data BExp
     = Boolean Bool
-    | BVariable String
     | Not BExp
     | Or BExp BExp
     | And BExp BExp
