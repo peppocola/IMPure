@@ -46,7 +46,9 @@ commandsExec e [] = e
 commandsExec e (Skip : cs) = commandsExec e cs
 commandsExec e ((VariableDeclaration s ex) : cs) =
   case aexpEval e ex of
-    Legal ex' -> commandsExec (insert e s ex') cs -- Multiple declaration of same variable allowed since there's no check
+    Legal ex' -> case get e s of
+      Just _ -> commandsExec (insert e s ex') cs
+      Nothing -> throw (MultipleDeclaration s)
     Error er -> throw er -- aexp is invalid
 commandsExec e ((Assignment s ex) : cs) =
   case get e s of
