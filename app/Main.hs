@@ -1,30 +1,11 @@
 module Main where
-
-import IMPure.Grammar
-  ( AExp (AVariable, Add, Constant, Mul),
-    BExp (Comparison),
-    Command (Assignment, VariableDeclaration, While),
-    Operator (Le),
-    Program (Program),
-  )
-import IMPure.Interpreter
-  ( emptyState,
-    programExec,
-  )
+import IMPure.Parser(Parser, parse)
+import IMPure.Interpreter (programExec, emptyState)
 
 main :: IO ()
 main = do
-  let p =
-        Program
-          [ VariableDeclaration "i" (Constant 1),
-            VariableDeclaration "n" (Constant 5),
-            VariableDeclaration "x" (Constant 1),
-            While
-              (Comparison (AVariable "i") (AVariable "n") Le)
-              [ Assignment "x" (Mul (AVariable "x") (AVariable "i")),
-                Assignment "i" (Add (AVariable "i") (Constant 1))
-              ]
-          ]
-  let s = programExec emptyState p
-  print p
-  print s
+    p <- readFile "test.pure"
+    let c = parse p
+    let s = programExec emptyState c
+    print c
+    print s

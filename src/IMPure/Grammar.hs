@@ -2,9 +2,7 @@
 -- the data.
 module IMPure.Grammar where
 
-newtype Program
-  = Program [Command]
-  deriving (Show)
+type Program = [Command]
 
 data Command
   = VariableDeclaration String AExp

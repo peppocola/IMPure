@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: fed188fd8a11097d74d130d117a2567e33cfb248ee03426808cb01bc5b280454
+-- hash: b9711b888efbf95d2abea36448eff2ca483dabf53af75a8435e10359f8c4c5b4
 
 name:           IMPure
 version:        0.1.0.0
@@ -31,6 +31,7 @@ library
       IMPure.Exception
       IMPure.Grammar
       IMPure.Interpreter
+      IMPure.Parser
   other-modules:
       Paths_IMPure
   hs-source-dirs:
@@ -42,6 +43,7 @@ library
 executable IMPure-exe
   main-is: Main.hs
   other-modules:
+      InterpreterMain
       Paths_IMPure
   hs-source-dirs:
       app

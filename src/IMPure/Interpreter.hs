@@ -8,7 +8,7 @@ import IMPure.Grammar
     BExp (..),
     Command (..),
     Operator (..),
-    Program (..),
+    Program,
   )
 
 type Env = Dict String Int
@@ -41,31 +41,28 @@ compEval e a b Ge = (>=) <$> aexpEval e a <*> aexpEval e b
 compEval e a b Eq = (==) <$> aexpEval e a <*> aexpEval e b
 compEval e a b Neq = (/=) <$> aexpEval e a <*> aexpEval e b
 
-commandsExec :: Env -> [Command] -> Env
-commandsExec e [] = e
-commandsExec e (Skip : cs) = commandsExec e cs
-commandsExec e ((VariableDeclaration s ex) : cs) =
+programExec :: Env -> [Command] -> Env
+programExec e [] = e
+programExec e (Skip : cs) = programExec e cs
+programExec e ((VariableDeclaration s ex) : cs) =
   case aexpEval e ex of
     Legal ex' -> case get e s of
       Just _ -> throw (MultipleDeclaration s)
-      Nothing -> commandsExec (insert e s ex') cs
-    Error er -> throw er -- aexp is invalid
-commandsExec e ((Assignment s ex) : cs) =
+      Nothing -> programExec (insert e s ex') cs
+    Error er -> throw er
+programExec e ((Assignment s ex) : cs) =
   case get e s of
-    Just _ -> commandsExec (insert e s ex') cs
+    Just _ -> programExec (insert e s ex') cs
       where
         Legal ex' = aexpEval e ex
     Nothing -> throw (UndeclearedVariable s)
-commandsExec e ((IfThenElse b nc nc') : cs) =
+programExec e ((IfThenElse b nc nc') : cs) =
   case bexpEval e b of
-    Legal True -> commandsExec e (nc ++ cs)
-    Legal False -> commandsExec e (nc' ++ cs)
+    Legal True -> programExec e (nc ++ cs)
+    Legal False -> programExec e (nc' ++ cs)
     Error er -> throw er
-commandsExec e ((While b c) : cs) =
+programExec e ((While b c) : cs) =
   case bexpEval e b of
-    Legal True -> commandsExec e (c ++ [While b c] ++ cs)
-    Legal False -> commandsExec e cs
+    Legal True -> programExec e (c ++ [While b c] ++ cs)
+    Legal False -> programExec e cs
     Error er -> throw er
-
-programExec :: Env -> Program -> Env
-programExec e (Program c) = commandsExec e c
