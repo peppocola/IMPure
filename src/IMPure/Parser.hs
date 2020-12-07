@@ -3,6 +3,7 @@ import IMPure.Grammar (Command(..), BExp(..), Operator(..), AExp(..))
 
 newtype Parser a = P (String -> [(a, String)])
 
+-- Main function that executes the parsing, given a string written in IMPure language
 parse :: String -> [Command]
 parse s = fst(head (p s)) where (P p) = program 
 
@@ -44,17 +45,18 @@ instance Alternative Parser where
         [] ->  q input
         [(v, out)] -> [(v, out)])
 
+-- Parses a single char
 item :: Parser Char
 item = P (\inp -> case inp of 
         [] -> []
         (x:xs) -> [(x,xs)])
 
+-- Given a property p it verifies if the property holds for x
 sat :: (Char -> Bool) -> Parser Char
 sat p = 
- do {
- x <- item;
- if p x then return x else empty;
- }
+    do 
+        x <- item;
+        if p x then return x else empty;
 
 spaces :: [Char]
 spaces = ['\n', '\t', '\r', ' ']
@@ -62,12 +64,12 @@ spaces = ['\n', '\t', '\r', ' ']
 isSpace :: Char -> Bool
 isSpace c = elem c spaces
 
+-- Removes whitespaces
 space :: Parser ()
 space = 
-    do {
+    do
         many (sat isSpace);
         return ();
-    }
 
 digits :: [Char]
 digits = ['0'..'9']
@@ -114,45 +116,40 @@ char x = sat (== x)
 string :: String -> Parser String
 string [] = return []
 string (x:xs) = 
-    do{
+    do
         char x;
         string xs;
         return (x:xs);
-    }
 
 anIdentifier :: Parser String
 anIdentifier = 
-    do {
+    do
         x <- letter;
         xs <- many alphanum;
         return (x:xs);
-    }
 
 aNaturalNumber :: Parser Int
 aNaturalNumber =
-    do{
+    do
         xs <- some digit;
         return (read xs);
-    }
 
 int :: Parser Int
 int = 
-    do {
+    do
         char '-';
         n <- aNaturalNumber;
         return (-n);
-    }
     <|>
     aNaturalNumber;
 
 token :: Parser a -> Parser a
 token p = 
-    do {
+    do
         space;
         v <- p;
         space;
         return v;
-    }
 
 identifier :: Parser String
 identifier = token anIdentifier
@@ -167,35 +164,37 @@ symbol :: String -> Parser String
 symbol xs = token (string xs)
 
 aexp :: Parser AExp
-aexp = ap <|> sp <|> aTerm
-  where
-    ap = do
-      a <- aTerm
-      symbol "+"
-      Add a <$> aexp
-    sp = do
-      a <- aTerm
-      symbol "-"
-      Sub a <$> aexp
+aexp =
+    do
+        a <- aTerm
+        symbol "+"
+        Add a <$> aexp
+    <|>
+    do
+        a <- aTerm
+        symbol "-"
+        Sub a <$> aexp
+    <|> aTerm
 
 aTerm :: Parser AExp
-aTerm = mp <|> aFactor
-  where
-    mp = do
-      a <- aFactor
-      symbol "*"
-      Mul a <$> aTerm
+aTerm =
+    do
+        a <- aFactor
+        symbol "*"
+        Mul a <$> aTerm
+    <|> aFactor
 
 aFactor :: Parser AExp
-aFactor = cp <|> ip <|> nested
-  where
-    cp = Constant <$> naturalNumber
-    ip = AVariable <$> identifier
-    nested = do
-      symbol "("
-      ep <- aexp
-      symbol ")"
-      return ep
+aFactor = 
+        (Constant <$> naturalNumber)
+    <|>
+        (AVariable <$> identifier)
+    <|>
+    do
+        symbol "("
+        ep <- aexp
+        symbol ")"
+        return ep
 
 bexp :: Parser BExp
 bexp =

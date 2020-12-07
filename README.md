@@ -15,13 +15,13 @@ command ::=   <assignment> ";"
           |   <while> ";"
           |   <skip> ";"
 
-assignment ::=   "var" <identifier> "=" <aexp>
-            |    "var" <identifier> "=" <bexp>
+assignment ::=    <identifier> "=" <aexp>
+            |     <identifier> "=" <bexp>
 
-ifThenElse ::=    "if" (<bexp>) "then" <program> "endif"
-            |     "if" (<bexp>) "then" <program> "else" <program> "endif"
+ifThenElse ::=    "if" (<bexp>) "{" <program> "}"
+            |     "if" (<bexp>) "{" <program> "}" "else" "{" <program> "}"
 
-while ::=      "while" (<bexp>) "do" <program> "endw"
+while ::=      "while" (<bexp>) "{" <program> "}"
 
 skip ::=   "skip"
 

@@ -8,7 +8,6 @@ import IMPure.Grammar
     BExp (..),
     Command (..),
     Operator (..),
-    Program,
   )
 
 type Env = Dict String Int
