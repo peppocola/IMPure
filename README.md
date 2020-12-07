@@ -3,7 +3,15 @@
 </p>
 
 # IMPure
-A simple interpreter for the IMP language written in Haskell
+A simple interpreter for the IMP language written in Haskell.
+This parser-interpreter was realized for the course of "**Formal Method for Computer Science**" by Giuseppe Colavito.
+IMP is a simple imperative language. It is composed by these basic structures:
+<ul>
+<li>Assignment : assign a value to a variable</li> 
+<li>If then else : if a boolean expression is true, then some instructions are executed. If not, some other instruction are executed</li>
+<li>While : loops executing the same command while a boolean condition is true</li>
+<li>Skip : does nothing</li>
+</ul>
 
 # Grammar
 ```EBNF
