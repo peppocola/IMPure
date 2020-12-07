@@ -1,5 +1,5 @@
 <p align="center" width="100%">
-<img src="IMPure.jpg" width="350">
+<img src="img/IMPure.jpg" width="350">
 </p>
 
 # IMPure
@@ -63,3 +63,6 @@ digit ::=     [0-9]*
 
 identifier ::=    [a-zA-Z_][a-zA-Z_0-9]*
 ```
+# Execution Example
+In this example the IMPure interpreter evaluates the factorial (the code used can be found in the file **test.pure**)
+![](img/example.gif)
