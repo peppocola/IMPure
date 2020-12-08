@@ -46,8 +46,11 @@ exec = do
     p <- readFile "test.pure"
     let c = parse p
     let s = programExec emptyState c
-    --print c
-    putStrLn "State of the memory:"
+    putStrLn "\nInput Program\n"
+    putStrLn p
+    putStrLn "\nRepresentation of the program:\n"
+    print c
+    putStrLn "\nState of the memory:\n"
     print s
 
 main :: IO()

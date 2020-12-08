@@ -4,7 +4,7 @@ newtype Dict key value = Dict [(key, value)]
 
 instance (Show key, Show value) => Show (Dict key value) where
   show (Dict []) = ""
-  show (Dict ((k,v): ps)) =  show k ++ "=" ++ show v ++ "\n" ++ show (Dict ps)
+  show (Dict ((k,v): ps)) = show k ++ "=" ++ show v ++ "\n" ++ show (Dict ps)
 
 --get an empty dictionary
 empty :: (Eq key) => Dict key value
