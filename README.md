@@ -2,7 +2,7 @@
 <img src="img/IMPure.jpg" width="350">
 </p>
 
-# IMPure
+# 😈IMPure😈
 A simple interpreter for the IMP language written in Haskell.
 This parser-interpreter was realized for the course of "**Formal Method for Computer Science**" by Giuseppe Colavito.
 IMP is a simple imperative language. It is composed by these basic structures:
