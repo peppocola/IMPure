@@ -10,11 +10,12 @@ data Command
   | IfThenElse BExp [Command] [Command]
   | While BExp [Command]
   | Skip
+
 instance Show Command where
   show (VariableDeclaration s a) = "new variable: " ++ show s ++ ":=" ++ show a ++ "\n"
   show (Assignment s a) = show s ++ "=" ++ show a ++ "\n"
   show (IfThenElse b c c1) = "if" ++ show b ++ "then : " ++ show c ++ "else : " ++ show c1
-  show (While b c) = "while " ++ show b ++ "\n" ++ "do : \n" ++ show c  
+  show (While b c) = "while " ++ show b ++ "\n" ++ "do : \n" ++ show c
 
 data AExp
   = Constant Int
@@ -36,6 +37,7 @@ data BExp
   | Or BExp BExp
   | And BExp BExp
   | Comparison AExp AExp Operator
+
 instance Show BExp where
   show (Boolean b) = show b
   show (Not b) = "not " ++ show b
