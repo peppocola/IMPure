@@ -5,6 +5,11 @@
 # 😈IMPure😈
 A simple interpreter for the IMP language written in Haskell.
 This parser-interpreter was realized for the course of "**Formal Method for Computer Science**" by Giuseppe Colavito.
+
+***WARNING***
+If you are here for the Formal Methods for Computer Science exam, this implementation is not suitable for your exam, since I use some libraries external to prelude. If you want to see my exam project, switch to the *JustPrelude* branch!
+***END WARNING***
+
 IMP is a simple imperative language. It is composed by these basic structures:
 <ul>
 <li>Assignment : assign a value to a variable</li> 
@@ -175,25 +180,62 @@ data Operator
   | Neq
 ```
 ### Interpreter Implementation
-The interpreter
+To implement all of the constructs of the IMP language, the interpreter will have to evaluate arithmetic expressions, boolean expressions and the commands we talked about (eg. if, while, ...). 
+The results of the evaluation  of the interpreter are wrapped in a *Result* type (similar to Maybe), which is defined this way:
+```Haskell
+import Control.Exception (Exception)
+import Text.Printf (printf)
+
+data Result a = Legal a | Error InterpreterException
+
+instance Functor Result where
+  fmap f (Legal r) = Legal (f r)
+  fmap _ (Error e) = Error e
+
+instance Applicative Result where
+  pure r = Legal r
+  (<*>) (Legal f) (Legal r) = Legal (f r)
+  (<*>) (Error e) _ = Error e
+  (<*>) _ (Error e) = Error e
+
+data InterpreterException
+  = UndeclearedVariable String
+  | MultipleDeclaration String
+  | InvalidBExp String
+  | InvalidAExp String
+
+instance Show InterpreterException where
+  show (UndeclearedVariable s) = printf "Undecleared variable! '%s'" s
+  show (MultipleDeclaration s) = printf "Multiple declaration of a variable! '%s'" s
+  show (InvalidBExp s) = printf "The boolean expression is invalid! '%s'" s
+  show (InvalidAExp s) = printf "The arithmetic expression is invalid! '%s'" s
+
+instance Exception InterpreterException
+```
+With this implementation we can easly throw exception when they are encountered in the interpreter to better understand which part of the code caused the error!
+
 #### Arithmetic expression evaluation
+The interpreter can evaluate an arithmetic expression given an environment and an *AExp* (that is defined in the internal structures). The output can be a ```Legal Int``` or an ```Error```. This evaluation is implemented using Functor(<$>) and Applicative (<*>).
+
 ```Haskell
 aexpEval :: Env -> AExp -> Result Int
 aexpEval _ (Constant i) = Legal i
 aexpEval e (AVariable s) =
   case get e s of
     Just v -> Legal v
-    Nothing -> error "UndeclearedVariable"
-aexpEval e (Add a b) = (+) <$> aexpEval e a <*> aexpEval e b --Applicative
+    Nothing -> Error (UndeclearedVariable s) 
+aexpEval e (Add a b) = (+) <$> aexpEval e a <*> aexpEval e b
 aexpEval e (Sub a b) = (-) <$> aexpEval e a <*> aexpEval e b
 aexpEval e (Mul a b) = (*) <$> aexpEval e a <*> aexpEval e b
 ```
+
 #### Boolean expression evaluation
+The interpreter can evaluate a boolean expression given an environment and a *BExp* (that is defined in the internal structures). The output can be a ```Legal Bool``` or an ```Error```. This evaluation is implemented again using Functor(```<$>```) and Applicative (```<*>```).
 ```Haskell
 bexpEval :: Env -> BExp -> Result Bool
 bexpEval _ (Boolean b) = Legal b
-bexpEval e (Not b) = not <$> bexpEval e b --Functor
-bexpEval e (Or a b) = (||) <$> bexpEval e a <*> bexpEval e b --Applicative
+bexpEval e (Not b) = not <$> bexpEval e b
+bexpEval e (Or a b) = (||) <$> bexpEval e a <*> bexpEval e b
 bexpEval e (And a b) = (&&) <$> bexpEval e a <*> bexpEval e b
 bexpEval e (Comparison a b op) = compEval e a b op
 
@@ -206,6 +248,7 @@ compEval e a b Eq = (==) <$> aexpEval e a <*> aexpEval e b
 compEval e a b Neq = (/=) <$> aexpEval e a <*> aexpEval e b
 ```
 #### Commands Execution
+Given an environment and a list of commands, we can execute the commands in the list (the program).
 ```Haskell
 programExec :: Env -> [Command] -> Env
 programExec e [] = e
@@ -213,26 +256,28 @@ programExec e (Skip : cs) = programExec e cs
 programExec e ((VariableDeclaration s ex) : cs) =
   case aexpEval e ex of
     Legal ex' -> case get e s of
-      Just _ -> error "MultipleDeclaration"
+      Just _ -> throw (MultipleDeclaration s)
       Nothing -> programExec (insert e s ex') cs
-    Error er -> error "IllegalArithmeticExpression"
+    Error er -> throw er
 programExec e ((Assignment s ex) : cs) =
   case get e s of
     Just _ -> programExec (insert e s ex') cs
       where
         Legal ex' = aexpEval e ex
-    Nothing -> error "UndeclearedVariable"
+    Nothing -> throw (UndeclearedVariable s)
 programExec e ((IfThenElse b nc nc') : cs) =
   case bexpEval e b of
     Legal True -> programExec e (nc ++ cs)
     Legal False -> programExec e (nc' ++ cs)
-    Error er -> error "IllegalBooleanExpression"
+    Error er -> throw er
 programExec e ((While b c) : cs) =
   case bexpEval e b of
     Legal True -> programExec e (c ++ [While b c] ++ cs)
     Legal False -> programExec e cs
-    Error er -> error "IllegalBooleanExpression"
+    Error er -> throw er
 ```
+And here is our interpreter. If we give in input a program (written as the internal representation of the program of the interpreter), the interpreter will evaluate the program and give us in output the state of the memory at the end of the program!
+If something goes wrong, an exception is thrown and the execution gets interrupted. Some basic information about the error are shown.
 ### Parser Implementation
 
 # Execution Example
