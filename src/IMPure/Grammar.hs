@@ -14,8 +14,9 @@ data Command
 instance Show Command where
   show (VariableDeclaration s a) = "new variable: " ++ show s ++ ":=" ++ show a ++ "\n"
   show (Assignment s a) = show s ++ "=" ++ show a ++ "\n"
-  show (IfThenElse b c c1) = "if" ++ show b ++ "then : " ++ show c ++ "else : " ++ show c1
+  show (IfThenElse b c c1) = "if" ++ show b ++ "\nthen :\n" ++ show c ++ "\nelse :\n" ++ show c1
   show (While b c) = "while " ++ show b ++ "\n" ++ "do : \n" ++ show c
+  show Skip = "\nskip\n" 
 
 data AExp
   = Constant Int

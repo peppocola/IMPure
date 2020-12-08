@@ -44,7 +44,7 @@ logo = do
 
 exec :: IO ()
 exec = do
-  p <- readFile "test.pure"
+  p <- readFile "test1.pure"
   let c = parse p
   let s = programExec emptyState c
   putStrLn "\nInput Program\n"

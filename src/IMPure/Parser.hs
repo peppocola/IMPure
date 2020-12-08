@@ -329,7 +329,7 @@ ifThenElse =
       symbol "}"
       return (IfThenElse b thenProgram elseProgram)
       <|> do
-        symbol "endif"
+        symbol "}"
         return (IfThenElse b thenProgram [Skip])
 
 while :: Parser Command
