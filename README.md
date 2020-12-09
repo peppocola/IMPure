@@ -18,9 +18,8 @@ IMP is a simple imperative language. It is composed by these basic structures:
 <li>Skip : does nothing</li>
 </ul>
 
-The IMPure interpreter uses eager evaluation strategy.
-The IMPure language can only accept variables of type Integer. To perform this kind of execution the interpreter uses the **call-by-value**.
-
+The IMPure interpreter uses eager evaluation strategy. To perform this kind of execution the interpreter uses the **call-by-value**.
+The IMPure language can only accept variables of type Integer. 
 # Grammar
 Here is reported the formal grammar of the IMPure language.
 ```EBNF
@@ -105,10 +104,6 @@ module IMPure.Dict where
 
 newtype Dict key value = Dict [(key, value)]
 
-instance (Show key, Show value) => Show (Dict key value) where
-  show (Dict []) = ""
-  show (Dict ((k, v) : ps)) = show k ++ "=" ++ show v ++ "\n" ++ show (Dict ps)
-
 --get an empty dictionary
 empty :: (Eq key) => Dict key value
 empty = Dict []
@@ -144,26 +139,40 @@ The interpreter operates on the internal representation of the program that is c
 The internal structures used for this purpose are similar to the grammar's non-terminals : 
 
 ```Haskell
--- Grammar.hs contains the structures for the internal representation of
--- the data.
-module IMPure.Grammar where
-
 type Program = [Command]
+```
+The program is represented as a list of commands.
 
+```Haskell
 data Command
   = VariableDeclaration String AExp
   | Assignment String AExp
   | IfThenElse BExp [Command] [Command]
   | While BExp [Command]
   | Skip
+```
 
+The available commands are:
+<ul>
+<li>Variable declaration, to declare a variable and assign to it an integer value,</li>
+<li>Assignment, to assign to a previously declared variable a new value,</li>
+<li>If-then-else, which executes the first list of commands if the boolean condition is true, otherwhise it executes the second list of commands, </li>
+<li>While, which executes the list of commands while the boolean condition is true,</li>
+<li>Skip, which goes to the next command without doing anything.</li>
+</ul>
+
+```Haskell
 data AExp
   = Constant Int
   | AVariable String
   | Add AExp AExp
   | Sub AExp AExp
   | Mul AExp AExp
+```
+An arithmetic expression could be an integer constant, a name of variable, or an operation between two arithmetic expressions.
+The available operations on arithmetic expressions are addition, subtraction and multiplication.
 
+```Haskell
 data BExp
   = Boolean Bool
   | Not BExp
@@ -179,6 +188,10 @@ data Operator
   | Eq
   | Neq
 ```
+A boolean expression could be a boolean constant, an operation on boolean expression or a comparison between arithmetic expressions.
+The available operations on boolean expressions are not, or and and.
+The available comparison operators are less-then, less-equal, greater-then, greater-equal, equal, not-equal.
+
 ### Interpreter Implementation
 To implement all of the constructs of the IMP language, the interpreter will have to evaluate arithmetic expressions, boolean expressions and the commands we talked about (eg. if, while, ...). 
 The results of the evaluation  of the interpreter are wrapped in a *Result* type (similar to Maybe), which is defined this way:
@@ -212,7 +225,7 @@ instance Show InterpreterException where
 
 instance Exception InterpreterException
 ```
-With this implementation we can easly throw exception when they are encountered in the interpreter to better understand which part of the code caused the error!
+With this implementation we can easly throw exception when they are encountered in the interpreter to better understand which part of the code caused the error! With the help of the Functor and Applicative that has been implemented for the Result type, we can easly unwrap the results, do some operation on them and then wrap them again and return it.
 
 #### Arithmetic expression evaluation
 The interpreter can evaluate an arithmetic expression given an environment and an *AExp* (that is defined in the internal structures). The output can be a ```Legal Int``` or an ```Error```. This evaluation is implemented using Functor(<$>) and Applicative (<*>).
@@ -278,6 +291,23 @@ programExec e ((While b c) : cs) =
 ```
 And here is our interpreter. If we give in input a program (written as the internal representation of the program of the interpreter), the interpreter will evaluate the program and give us in output the state of the memory at the end of the program!
 If something goes wrong, an exception is thrown and the execution gets interrupted. Some basic information about the error are shown.
+
+This is how a legal input for the interpreter looks like. At the end of the computation, x will be the result of the factorial of 5.
+
+```Haskell
+          [ VariableDeclaration "i" (Constant 1),
+            VariableDeclaration "n" (Constant 5),
+            VariableDeclaration "x" (Constant 1),
+            While
+              (Comparison (AVariable "i") (AVariable "n") Le)
+              [ Assignment "x" (Mul (AVariable "x") (AVariable "i")),
+                Assignment "i" (Add (AVariable "i") (Constant 1))
+              ]
+          ]
+```
+Of course this "language" is too hard to write and understand. For more complex programs it would be really heavy to read and write.
+To avoid this problems we define a more friendly language and implement a parser that will transform the new language in the language of the interpreter.
+ 
 ### Parser Implementation
 
 # Execution Example
