@@ -7,7 +7,6 @@ command ::=   <assignment> ";"
           |   <skip> ";"
 
 assignment ::=    <identifier> "=" <aexp>
-            |     <identifier> "=" <bexp>
 
 ifThenElse ::=    "if" (<bexp>) "{" <program> "}"
             |     "if" (<bexp>) "{" <program> "}" "else" "{" <program> "}"
