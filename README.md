@@ -6,10 +6,6 @@
 A simple interpreter for the IMP language written in Haskell.
 This parser-interpreter was realized for the course of "**Formal Method for Computer Science**" by Giuseppe Colavito.
 
-***WARNING***
-If you are here for the Formal Methods for Computer Science exam, this implementation is not suitable for your exam, since I use some libraries external to prelude. If you want to see my exam project, switch to the *JustPrelude* branch!
-***END WARNING***
-
 IMP is a simple imperative language. It is composed by these basic structures:
 <ul>
 <li>Assignment : assign a value to a variable</li> 
@@ -20,7 +16,7 @@ IMP is a simple imperative language. It is composed by these basic structures:
 
 The IMPure interpreter uses eager evaluation strategy. To perform this kind of execution the interpreter uses the **call-by-value**.
 The IMPure language can only accept variables of type Integer. 
-<br><br><br>
+<br><br><br><br><br><br><br><br>
 # Grammar
 Here is reported the formal grammar of the IMPure language.
 ```EBNF
@@ -169,56 +165,35 @@ The available comparison operators are less-then, less-equal, greater-then, grea
 
 ### Interpreter Implementation
 To implement all of the constructs of the IMP language, the interpreter will have to evaluate arithmetic expressions, boolean expressions and the commands we talked about (eg. if, while, ...). 
-The results of the evaluation  of the interpreter are wrapped in a *Result* type (similar to Maybe), which is defined this way:
-```Haskell
-data Result a = Legal a | Error InterpreterException
-
-instance Functor Result where
-  fmap f (Legal r) = Legal (f r)
-  fmap _ (Error e) = Error e
-
-instance Applicative Result where
-  pure r = Legal r
-  (<*>) (Legal f) (Legal r) = Legal (f r)
-  (<*>) (Error e) _ = Error e
-  (<*>) _ (Error e) = Error e
-
-data InterpreterException
-  = UndeclearedVariable String
-  | MultipleDeclaration String
-  | InvalidBExp String
-  | InvalidAExp String
-
-instance Exception InterpreterException
-```
-With this implementation we can easly throw exception when they are encountered in the interpreter to better understand which part of the code caused the error! With the help of the Functor and Applicative that has been implemented for the Result type, we can easly unwrap the results, do some operation on them and then wrap them again and return it.
+The results of the evaluation  of the interpreter are wrapped in a *Maybe* type.
+This way we can easly represent failures and use the ```error``` function to interrupt the execution of the interpreter. We can also have a string in input to better understand which was the cause of the error! Since the Functor and Applicative are already implemented for the Maybe type, we can easly unwrap the results, do some operation on them and then wrap them again and return it.
 
 #### Arithmetic expression evaluation
-The interpreter can evaluate an arithmetic expression given an environment and an *AExp* (that is defined in the internal structures). The output can be a ```Legal Int``` or an ```Error```. This evaluation is implemented using Functor(<$>) and Applicative (<*>).
+The interpreter can evaluate an arithmetic expression given an environment and an *AExp* (that is defined in the internal structures). The output can be a ```Just Int``` or an ```Nothing```. This evaluation is implemented using Functor(<$>) and Applicative (<*>).
 
 ```Haskell
-aexpEval :: Env -> AExp -> Result Int
-aexpEval _ (Constant i) = Legal i
+aexpEval :: Env -> AExp -> Maybe Int
+aexpEval _ (Constant i) = Just i
 aexpEval e (AVariable s) =
   case get e s of
-    Just v -> Legal v
-    Nothing -> Error (UndeclearedVariable s) 
-aexpEval e (Add a b) = (+) <$> aexpEval e a <*> aexpEval e b
+    Just v -> Just v
+    Nothing -> error "UndeclearedVariable" 
+aexpEval e (Add a b) = (+) <$> aexpEval e a <*> aexpEval e b --Applicative
 aexpEval e (Sub a b) = (-) <$> aexpEval e a <*> aexpEval e b
 aexpEval e (Mul a b) = (*) <$> aexpEval e a <*> aexpEval e b
 ```
 
 #### Boolean expression evaluation
-The interpreter can evaluate a boolean expression given an environment and a *BExp* (that is defined in the internal structures). The output can be a ```Legal Bool``` or an ```Error```. This evaluation is implemented again using Functor(```<$>```) and Applicative (```<*>```).
+The interpreter can evaluate a boolean expression given an environment and a *BExp* (that is defined in the internal structures). The output can be a ```Just Bool``` or an ```Nothing```. This evaluation is implemented again using Functor(```<$>```) and Applicative (```<*>```).
 ```Haskell
-bexpEval :: Env -> BExp -> Result Bool
-bexpEval _ (Boolean b) = Legal b
-bexpEval e (Not b) = not <$> bexpEval e b
-bexpEval e (Or a b) = (||) <$> bexpEval e a <*> bexpEval e b
+bexpEval :: Env -> BExp -> Maybe Bool
+bexpEval _ (Boolean b) = Just b
+bexpEval e (Not b) = not <$> bexpEval e b --Functor
+bexpEval e (Or a b) = (||) <$> bexpEval e a <*> bexpEval e b --Applicative
 bexpEval e (And a b) = (&&) <$> bexpEval e a <*> bexpEval e b
 bexpEval e (Comparison a b op) = compEval e a b op
 
-compEval :: Env -> AExp -> AExp -> Operator -> Result Bool
+compEval :: Env -> AExp -> AExp -> Operator -> Maybe Bool
 compEval e a b Lt = (<) <$> aexpEval e a <*> aexpEval e b
 compEval e a b Le = (<=) <$> aexpEval e a <*> aexpEval e b
 compEval e a b Gt = (>) <$> aexpEval e a <*> aexpEval e b
@@ -234,29 +209,29 @@ programExec e [] = e
 programExec e (Skip : cs) = programExec e cs
 programExec e ((VariableDeclaration s ex) : cs) =
   case aexpEval e ex of
-    Legal ex' -> case get e s of
-      Just _ -> throw (MultipleDeclaration s)
+    Just ex' -> case get e s of
+      Just _ -> error "MultipleDeclaration"
       Nothing -> programExec (insert e s ex') cs
-    Error er -> throw er
+    Nothing -> error "InvalidArithmeticExpression"
 programExec e ((Assignment s ex) : cs) =
   case get e s of
     Just _ -> programExec (insert e s ex') cs
       where
-        Legal ex' = aexpEval e ex
-    Nothing -> throw (UndeclearedVariable s)
+        Just ex' = aexpEval e ex
+    Nothing -> error "UndeclearedVariable"
 programExec e ((IfThenElse b nc nc') : cs) =
   case bexpEval e b of
-    Legal True -> programExec e (nc ++ cs)
-    Legal False -> programExec e (nc' ++ cs)
-    Error er -> throw er
+    Just True -> programExec e (nc ++ cs)
+    Just False -> programExec e (nc' ++ cs)
+    Nothing -> error "InvalidBooleanExpression"
 programExec e ((While b c) : cs) =
   case bexpEval e b of
-    Legal True -> programExec e (c ++ [While b c] ++ cs)
-    Legal False -> programExec e cs
-    Error er -> throw er
+    Just True -> programExec e (c ++ [While b c] ++ cs)
+    Just False -> programExec e cs
+    Nothing -> error "InvalidBooleanExpression"
 ```
 And here is our interpreter. If we give in input a program (written as the internal representation of the program of the interpreter), the interpreter will evaluate the program and give us in output the state of the memory at the end of the program!
-If something goes wrong, an exception is thrown and the execution gets interrupted. Some basic information about the error are shown.
+If something goes wrong, the execution gets interrupted and some basic information about the error are shown.
 
 This is how a legal input for the interpreter looks like. At the end of the computation, x will be the result of the factorial of 5.
 
@@ -349,7 +324,7 @@ instance Alternative Parser where
 
 It's useful to implement the class alternative that will allow us to concatenate more parsers and use some cool functions like many and some.
 If we have two parsers P and Q, using the ```<|>```, if the first fails we will get as output the output of the second parser, else we will get the output of the first. 
-
+<br><br><br><br><br><br><br>
 #### Arithmetic Expression Parsing
 ```Haskell
 aexp :: Parser AExp
@@ -386,7 +361,7 @@ aFactor =
       return a
 ```
 The aexp Parser does all the parsing on the arithmetic expressions by using aTerm that uses aFactor. This two other parser are useful to ensure the precedence on the multiplication operation but also giving the higher precedence on the expressions written between round brackets.
-
+<br><br><br><br><br><br><br><br>
 #### Boolean Expression Parsing
 ```Haskell
 bexp :: Parser BExp
@@ -424,6 +399,8 @@ bFact =
       symbol ")"
       return b
 ```
+The bexp Parser does all the parsing on the boolean expressions by using bTerm that uses bFactor. This two other parser are useful to ensure the precedence on the and operation but also giving the higher precedence on the not operation and the expressions written between round brackets. The bexp parser also uses the comparison parser, which handles all the possible comparisons between arithmetic expressions.
+
 ```Haskell
 comparison :: Parser BExp
 comparison =
@@ -454,7 +431,6 @@ comparison =
         a2 <- aexp
         return (Comparison a1 a2 Neq)
 ```
-The bexp Parser does all the parsing on the boolean expressions by using bTerm that uses bFactor. This two other parser are useful to ensure the precedence on the and operation but also giving the higher precedence on the not operation and the expressions written between round brackets. The bexp parser also uses the comparison parser, which handles all the possible comparisons between arithmetic expressions.
 
 #### Commands Parsing
 ```Haskell
@@ -573,43 +549,7 @@ The parse method parses an entire program and returns as output the list of comm
 
 # Execution Example
 In this example the IMPure interpreter evaluates the factorial (the code used can be found in the file **test.pure**)
-To use it i suggest you to install stack on your pc, clone this repo, move to the directory IMPure and type:
 ```
 stack run
 ```
 ![](img/example.gif)
-
-                                            😈 IMPure 😈
-
-                           :+-`           Giuseppe Colavito            .//
-                           -MNds:.                                .:odNM/
-                            mMMMMmho-`       ``......``       `-+hmMMMMM.
-                            yMMMMMMMMmy/-/oyhdmmmNNmmmddhs+-:sdNMMMMMMMd
-                            /MMMMMMMMMMMMMNmdhyssoossyhdmNMMMMMMMMMMMMMo
-                            `NMMMMMMMMmho:-`            `.:+ymNMMMMMMMM-
-                             hMMMMMms:`                      `-odNMMMMN
-                            `yMMNh/`                             -yNMMm.
-                           :dMMh-                                  .sNMN+`
-                         `oMMm/      `                         `     -dMMh`
-                        `yMMh.      -h:                      .y+      `sMMd.
-                        yMMh`       -MMh:                  .sNMo        oMMd`
-                       +MMd`        -MMMMh-              .sNMMMo         sMMh
-                      .NMN.         -MMMMMMh-          .sNMMMMMo         `mMM/
-                      sMMs          -MMMMMMMMy-      `sNMMMMMMMo          /MMd
-                      mMM-          `::::::::::`     ::::::::::.          `NMM.
-                     `MMM`                                                 dMM:
-                     `MMN                                                  hMM/
-                     `MMM`          `NNNNNNNNNNNNNNNNNNNNNNNNNN/           mMM:
-                      dMM/           sMMMMMMMMMMMMMMMMMMMMMMMMd           `MMM`
-                      +MMh           `hMMMMMMMMMMMMMMMMMMMMMMm.           oMMy
-                      `mMM/           `oNMMMMMMMMMMMMMMMMMMMy.           .NMM-
-                       :MMN-            .smMMMMMMMMMMMMMMNy:            `dMMo
-                        +MMm-             `:shmNMMMMNmdy/.             `hMMs
-                         +NMN/               ``..--..``               -dMMs`
-                          :mMNy.                                    `oNMN+
-                           `sNMNo.                                `/dMMh-
-                             -yNMms:`                           -omMMd/`
-                               -smMNds:.                    `-odNMNy:`
-                                 ./ymMMmds+:-..```````.-:/shmMMmh+.
-                                    .:+hdNMMNNmddddddmmNMMNmho:.
-                                        `.-/+syhhhhhhyso/:-`
