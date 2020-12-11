@@ -43,6 +43,9 @@ class Applicative f => Alternative f where
   many x = some x <|> pure []
   some x = (:) <$> x <*> many x
 
+--  many x = (:) <$> x <*> many x <|> pure []
+--  some x = (:) <$> x <*> (some x <|> pure [])
+
 instance Alternative Maybe where
   empty = Nothing
   Nothing <|> my = my
@@ -182,21 +185,22 @@ aexp :: Parser AExp
 aexp =
   do
     a <- aTerm
-    symbol "+"
-    Add a <$> aexp
-    <|> do
-      a <- aTerm
-      symbol "-"
-      Sub a <$> aexp
-    <|> aTerm
+    do
+      symbol "+"
+      Add a <$> aexp
+      <|> do
+        symbol "-"
+        Sub a <$> aexp
+      <|> return a
 
 aTerm :: Parser AExp
 aTerm =
   do
     a <- aFactor
-    symbol "*"
-    Mul a <$> aTerm
-    <|> aFactor
+    do
+      symbol "*"
+      Mul a <$> aTerm
+      <|> return a
 
 aFactor :: Parser AExp
 aFactor =
@@ -245,35 +249,31 @@ comparison :: Parser BExp
 comparison =
   do
     a1 <- aexp
-    symbol "<"
-    a2 <- aexp
-    return (Comparison a1 a2 Lt)
-    <|> do
-      a1 <- aexp
-      symbol "<="
+    do
+      symbol "<"
       a2 <- aexp
-      return (Comparison a1 a2 Le)
-    <|> do
-      a1 <- aexp
-      symbol ">"
-      a2 <- aexp
-      return (Comparison a1 a2 Gt)
-    <|> do
-      a1 <- aexp
-      symbol ">="
-      a2 <- aexp
-      return (Comparison a1 a2 Ge)
-    <|> do
-      a1 <- aexp
-      symbol "=="
-      a2 <- aexp
-      return (Comparison a1 a2 Eq)
-    <|> do
-      a1 <- aexp
-      symbol "!="
-      a2 <- aexp
-      return (Comparison a1 a2 Neq)
-
+      return (Comparison a1 a2 Lt)
+      <|> do
+        symbol "<="
+        a2 <- aexp
+        return (Comparison a1 a2 Le)
+      <|> do
+        symbol ">"
+        a2 <- aexp
+        return (Comparison a1 a2 Gt)
+      <|> do
+        symbol ">="
+        a2 <- aexp
+        return (Comparison a1 a2 Ge)
+      <|> do
+        symbol "=="
+        a2 <- aexp
+        return (Comparison a1 a2 Eq)
+      <|> do
+        symbol "!="
+        a2 <- aexp
+        return (Comparison a1 a2 Neq)
+        
 command :: Parser Command
 command =
   variableDeclaration
