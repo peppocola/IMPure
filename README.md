@@ -547,7 +547,7 @@ program :: Parser [Command]
 program =
   do many command
 ```
-The program parser parses many commands, meaning that a program can be composed of 0 or infinite commands.
+The program parser parses many commands, meaning that a program can be composed of 0 or potentially infinite commands.
 ```Haskell
 parse :: String -> ([Command], String)
 parse s = (first, second)
@@ -567,6 +567,49 @@ getParsedCommands (c , _) = c
 getRemainingInput :: ([Command], String) -> String
 getRemainingInput (_ , s) = s
 ```
+
+Here are some operation to use the parser.
+The parse method parses an entire program and returns as output the list of commands written in the internal representation and the string of unconsumed output. If this string is not empty, the parsing failed!
+
 # Execution Example
 In this example the IMPure interpreter evaluates the factorial (the code used can be found in the file **test.pure**)
+To use it i suggest you to install stack on your pc, clone this repo, move to the directory IMPure and type:
+```
+stack run
+```
 ![](img/example.gif)
+
+                                            😈 IMPure 😈
+
+                           :+-`           Giuseppe Colavito            .//
+                           -MNds:.                                .:odNM/
+                            mMMMMmho-`       ``......``       `-+hmMMMMM.
+                            yMMMMMMMMmy/-/oyhdmmmNNmmmddhs+-:sdNMMMMMMMd
+                            /MMMMMMMMMMMMMNmdhyssoossyhdmNMMMMMMMMMMMMMo
+                            `NMMMMMMMMmho:-`            `.:+ymNMMMMMMMM-
+                             hMMMMMms:`                      `-odNMMMMN
+                            `yMMNh/`                             -yNMMm.
+                           :dMMh-                                  .sNMN+`
+                         `oMMm/      `                         `     -dMMh`
+                        `yMMh.      -h:                      .y+      `sMMd.
+                        yMMh`       -MMh:                  .sNMo        oMMd`
+                       +MMd`        -MMMMh-              .sNMMMo         sMMh
+                      .NMN.         -MMMMMMh-          .sNMMMMMo         `mMM/
+                      sMMs          -MMMMMMMMy-      `sNMMMMMMMo          /MMd
+                      mMM-          `::::::::::`     ::::::::::.          `NMM.
+                     `MMM`                                                 dMM:
+                     `MMN                                                  hMM/
+                     `MMM`          `NNNNNNNNNNNNNNNNNNNNNNNNNN/           mMM:
+                      dMM/           sMMMMMMMMMMMMMMMMMMMMMMMMd           `MMM`
+                      +MMh           `hMMMMMMMMMMMMMMMMMMMMMMm.           oMMy
+                      `mMM/           `oNMMMMMMMMMMMMMMMMMMMy.           .NMM-
+                       :MMN-            .smMMMMMMMMMMMMMMNy:            `dMMo
+                        +MMm-             `:shmNMMMMNmdy/.             `hMMs
+                         +NMN/               ``..--..``               -dMMs`
+                          :mMNy.                                    `oNMN+
+                           `sNMNo.                                `/dMMh-
+                             -yNMms:`                           -omMMd/`
+                               -smMNds:.                    `-odNMNy:`
+                                 ./ymMMmds+:-..```````.-:/shmMMmh+.
+                                    .:+hdNMMNNmddddddmmNMMNmho:.
+                                        `.-/+syhhhhhhyso/:-`
