@@ -5,8 +5,23 @@ import IMPure.Grammar (AExp (..), BExp (..), Command (..), Operator (..))
 newtype Parser a = P (String -> [(a, String)])
 
 -- Main function that executes the parsing, given a string written in IMPure language
-parse :: String -> [Command]
-parse s = fst (head (p s)) where (P p) = program
+parse :: String -> ([Command], String)
+parse s = (first, second)
+  where
+    (P p) = program
+    result = p s
+    first = fst (head result)
+    second = snd (head result)
+
+parseFailed :: ([Command], String) -> Bool
+parseFailed (_ , "") = False
+parseFailed (_ , _) = True
+
+getParsedCommands :: ([Command], String) -> [Command]
+getParsedCommands (c , _) = c
+
+getRemainingInput :: ([Command], String) -> String
+getRemainingInput (_ , s) = s
 
 instance Functor Parser where
   fmap g (P p) =
@@ -208,9 +223,9 @@ aFactor =
     <|> (AVariable <$> identifier)
     <|> do
       symbol "("
-      ep <- aexp
+      a <- aexp
       symbol ")"
-      return ep
+      return a
 
 bexp :: Parser BExp
 bexp =
@@ -273,7 +288,7 @@ comparison =
         symbol "!="
         a2 <- aexp
         return (Comparison a1 a2 Neq)
-        
+
 command :: Parser Command
 command =
   variableDeclaration

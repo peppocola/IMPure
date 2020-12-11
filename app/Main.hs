@@ -1,7 +1,7 @@
 module Main where
 
 import IMPure.Interpreter (emptyState, programExec)
-import IMPure.Parser (parse)
+import IMPure.Parser (parse, parseFailed, getParsedCommands, getRemainingInput)
 
 logo :: IO ()
 logo = do
@@ -44,15 +44,22 @@ logo = do
 
 exec :: IO ()
 exec = do
-  p <- readFile "test1.pure"
+  p <- readFile "test.pure"
   let c = parse p
-  let s = programExec emptyState c
-  putStrLn "\nInput Program\n"
-  putStrLn p
-  putStrLn "\nRepresentation of the program:\n"
-  print c
-  putStrLn "\nState of the memory:\n"
-  print s
+  if parseFailed c
+    then do
+      putStrLn "\nParsing failed\n"
+      putStrLn "\nRemaining input:\n"
+      print (getRemainingInput c)
+    else do
+      putStrLn "\nParsing success!\n"
+      let s = programExec emptyState (getParsedCommands c)
+      putStrLn "\nInput Program\n"
+      putStrLn p
+      putStrLn "\nRepresentation of the program:\n"
+      print (getParsedCommands c)
+      putStrLn "\nState of the memory:\n"
+      print s
 
 main :: IO ()
 main = do
