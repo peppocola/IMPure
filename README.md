@@ -253,11 +253,11 @@ To avoid this problems we define a more friendly language and implement a parser
 #### Parser Type
 First of all we define our type Parser:
 ```Haskell
-newtype Parser a = P (String -> [(a, String)])
+newtype Parser a = P (String -> Maybe (a, String))
 ```
-The parser contains a function from string to a list of couples ```(a, String)```, where a is a parametrized type and the string is the part of the input string that is not parsed yet.
+The parser contains a function from string to a ```Maybe``` couple ```(a, String)```, where a is a parametrized type and the string is the part of the input string that is not parsed yet.
 The type a is the type of value returned in case of correctly parsed input.
-We use the list just to have the value of empty list that will mean to us that the parser failed to parse.
+We use the ```Maybe``` just to have the value of ```Nothing``` that will mean to us that the parser failed to parse.
 #### Functor, Applicative, Monad, Alternative
 We want to build a chain of parsers that will parse all the code we give in input, and to do this in haskell we will need to implement some methods:
 
@@ -266,20 +266,20 @@ instance Functor Parser where
   fmap g (P p) =
     P
       ( \input -> case p input of
-          [] -> []
-          [(v, out)] -> [(g v, out)]
+          Nothing -> Nothing
+          Just (v, out) -> Just (g v, out)
       )
 ```
 The Functor is usefull to apply a function to a value wrapped in a Parser.
 
 ``` Haskell
 instance Applicative Parser where
-  pure v = P (\input -> [(v, input)])
+  pure v = P (\input -> Just (v, input))
   (P pg) <*> px =
     P
       ( \input -> case pg input of
-          [] -> []
-          [(g, out)] -> case fmap g px of
+          Nothing -> Nothing
+          Just (g, out) -> case fmap g px of
             (P p) -> p out
       )
 ```
@@ -290,8 +290,8 @@ instance Monad Parser where
   (P p) >>= f =
     P
       ( \input -> case p input of
-          [] -> []
-          [(v, out)] -> case f v of
+          Nothing -> Nothing
+          Just (v, out) -> case f v of
             (P p) -> p out
       )
 ```
@@ -312,16 +312,15 @@ instance Alternative Maybe where
   (Just x) <|> _ = Just x
 
 instance Alternative Parser where
-  empty = P (const [])
+  empty = P (const Nothing)
 
   (P p) <|> (P q) =
     P
       ( \input -> case p input of
-          [] -> q input
-          [(v, out)] -> [(v, out)]
+          Nothing -> q input
+          Just (v, out) ->Just (v, out)
       )
 ```
-
 It's useful to implement the class alternative that will allow us to concatenate more parsers and use some cool functions like many and some.
 If we have two parsers P and Q, using the ```<|>```, if the first fails we will get as output the output of the second parser, else we will get the output of the first. 
 <br><br><br><br><br><br><br>
