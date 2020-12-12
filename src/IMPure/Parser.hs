@@ -2,17 +2,22 @@ module IMPure.Parser where
 
 import IMPure.Grammar (AExp (..), BExp (..), Command (..), Operator (..))
 
-newtype Parser a = P (String -> [(a, String)])
+newtype Parser a = P (String -> Maybe (a, String))
 
 -- Main function that executes the parsing, given a string written in IMPure language
 parse :: String -> ([Command], String)
-parse s = (first, second)
+parse s = case p s of
+  Nothing -> ([],"")
+  Just (c, s) -> (c, s) 
+  where (P p) = program
+  
+ {-- (first, second)
   where
     (P p) = program
     result = p s
     first = fst (head result)
     second = snd (head result)
-
+--}
 parseFailed :: ([Command], String) -> Bool
 parseFailed (_ , "") = False
 parseFailed (_ , _) = True
@@ -27,17 +32,17 @@ instance Functor Parser where
   fmap g (P p) =
     P
       ( \input -> case p input of
-          [] -> []
-          [(v, out)] -> [(g v, out)]
+          Nothing -> Nothing
+          Just (v, out) -> Just (g v, out)
       )
 
 instance Applicative Parser where
-  pure v = P (\input -> [(v, input)])
+  pure v = P (\input -> Just (v, input))
   (P pg) <*> px =
     P
       ( \input -> case pg input of
-          [] -> []
-          [(g, out)] -> case fmap g px of
+          Nothing -> Nothing
+          Just (g, out) -> case fmap g px of
             (P p) -> p out
       )
 
@@ -45,8 +50,8 @@ instance Monad Parser where
   (P p) >>= f =
     P
       ( \input -> case p input of
-          [] -> []
-          [(v, out)] -> case f v of
+          Nothing -> Nothing
+          Just (v, out) -> case f v of
             (P p) -> p out
       )
 
@@ -67,13 +72,13 @@ instance Alternative Maybe where
   (Just x) <|> _ = Just x
 
 instance Alternative Parser where
-  empty = P (const [])
+  empty = P (const Nothing)
 
   (P p) <|> (P q) =
     P
       ( \input -> case p input of
-          [] -> q input
-          [(v, out)] -> [(v, out)]
+          Nothing -> q input
+          Just (v, out) ->Just (v, out)
       )
 
 -- Parses a single char
@@ -81,8 +86,8 @@ item :: Parser Char
 item =
   P
     ( \inp -> case inp of
-        [] -> []
-        (x : xs) -> [(x, xs)]
+        [] -> Nothing
+        (x : xs) -> Just (x, xs)
     )
 
 -- Given a property p it verifies if the property holds for x
