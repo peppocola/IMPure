@@ -1,17 +1,19 @@
-program ::=   <command>
-          |   <command> <program>
+program ::=   <command> | <command> <program>
 
-command ::=   <assignment> ";"
+command ::=   <variableDeclaration> ";"
+          |   <assignment> ";"
           |   <ifThenElse> ";"
           |   <while> ";"
           |   <skip> ";"
 
-assignment ::=    <identifier> "=" <aexp>
+variableDeclaration ::= "var" <identifier> "=" <aexp> ";"
 
-ifThenElse ::=    "if" (<bexp>) "{" <program> "}"
-            |     "if" (<bexp>) "{" <program> "}" "else" "{" <program> "}"
+assignment ::=    <identifier> "=" <aexp> ";"
 
-while ::=      "while" (<bexp>) "{" <program> "}"
+ifThenElse ::=    "if" "("<bexp>")" "{" <program> "}"
+            |     "if" "("<bexp>")" "{" <program>"}" "else" "{" <program> "}"
+
+while ::=      "while" "("<bexp>")" "{" <program> "}"
 
 skip ::=   "skip"
 
@@ -21,13 +23,11 @@ aexp ::=    <aterm>
       |     <aterm> "*" <aexp>
       |     <aterm> "/" <aexp>
 
-aterm ::=   <positiveterm>
-      |     <negativeterm>
+aterm ::=   <positiveterm> | <negativeterm>
 
 negativeterm ::=    "-" <positiveterm>
 
-positiveterm ::=    <positivenumber>
-              |     <identifier>
+positiveterm ::=    <positivenumber> | <identifier>
 
 bexp ::=        <truthvalue>
       |         "not" <bexp>
@@ -35,20 +35,12 @@ bexp ::=        <truthvalue>
       |         <bexp> "and" <bexp>
       |         <aexp> <operator> <aexp>
 
-truthvalue ::=    "True"
-            |     "False"
-            |     <identifier>
+truthvalue ::=    "True" | "False" | <identifier>
 
-operator ::=    "<"
-          |     ">"
-          |     "=="
-          |     "<="
-          |     ">="
-          |     "!="
+operator ::=    "<" | ">" | "==" | "<=" | ">=" | "!="
 
 integer ::=   <digit>
           |   <digit> <integer>
 
 digit ::=     [0-9]*
-
 identifier ::=    [a-zA-Z_][a-zA-Z_0-9]*

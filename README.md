@@ -18,21 +18,23 @@ The IMPure interpreter uses eager evaluation strategy. To perform this kind of e
 The IMPure language can only accept variables of type Integer. 
 <br><br><br><br><br><br><br><br>
 # Grammar
-Here is reported the formal grammar of the IMPure language.
 ```EBNF
 program ::=   <command> | <command> <program>
 
-command ::=   <assignment> ";"
+command ::=   <variableDeclaration> ";"
+          |   <assignment> ";"
           |   <ifThenElse> ";"
           |   <while> ";"
           |   <skip> ";"
 
-assignment ::=    <identifier> "=" <aexp>
+variableDeclaration ::= "var" <identifier> "=" <aexp> ";"
 
-ifThenElse ::=    "if" (<bexp>) "{" <program> "}"
-            |     "if" (<bexp>) "{" <program> "}" "else" "{" <program> "}"
+assignment ::=    <identifier> "=" <aexp> ";"
 
-while ::=      "while" (<bexp>) "{" <program> "}"
+ifThenElse ::=    "if" "("<bexp>")" "{" <program> "}"
+            |     "if" "("<bexp>")" "{" <program>"}" "else" "{" <program> "}"
+
+while ::=      "while" "("<bexp>")" "{" <program> "}"
 
 skip ::=   "skip"
 
@@ -515,7 +517,7 @@ while =
     return (While b p)
 ```
 The while parser parses the "while" and the boolean expression between round brackets and saves the program inside the curl braces, returning the internal representation of this construct. The interpeter will then decide how many times the program inside the while will be executed, based on the boolean condition.
-
+<br><br><br><br><br>
 #### Program Parsing
 ```Haskell
 program :: Parser [Command]
@@ -545,7 +547,7 @@ getRemainingInput (_ , s) = s
 
 Here are some operation to use the parser.
 The parse method parses an entire program and returns as output the list of commands written in the internal representation and the string of unconsumed output. If this string is not empty, the parsing failed!
-
+<br><br><br><br><br><br><br><br><br><br>
 # Execution Example
 First, we run the shell in the folder of the project.
 
