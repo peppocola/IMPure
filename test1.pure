@@ -1,8 +1,8 @@
-var x = 1;
+var x = -1;
 var y = 5;
 if (x >= y){
     x = x + y;
 }else{
-    y = y -x;
+    y = y - x;
     skip ;
 }

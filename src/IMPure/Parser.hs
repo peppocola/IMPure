@@ -177,9 +177,9 @@ int :: Parser Int
 int =
   do
     char '-'
-    n <- aNaturalNumber
+    n <- naturalNumber
     return (- n)
-    <|> aNaturalNumber
+    <|> naturalNumber
 
 token :: Parser a -> Parser a
 token p =
@@ -224,7 +224,7 @@ aTerm =
 
 aFactor :: Parser AExp
 aFactor =
-  (Constant <$> naturalNumber)
+  (Constant <$> integer)
     <|> (AVariable <$> identifier)
     <|> do
       symbol "("
