@@ -547,8 +547,37 @@ Here are some operation to use the parser.
 The parse method parses an entire program and returns as output the list of commands written in the internal representation and the string of unconsumed output. If this string is not empty, the parsing failed!
 
 # Execution Example
+First, we run the shell in the folder of the project.
+
+![](img/Screenshots/1-Shell.png)
+
+Then we type ghci.
+
+![](img/Screenshots/2-ghci.png)
+
+Once in ghci we import all the modules.
+
+***:l app/Main.hs src/IMPure/Dict.hs src/IMPure/Grammar.hs src/IMPure/Interpreter.hs src/IMPure/Parser.hs***
+
+(type this all in a single line!)
+
+![](img/Screenshots/3-Import_modules.png)
+
+Once we have imported all the modules we type main and then press Enter!
+
+![](img/Screenshots/5-IMPure.png)
+
+Now we should write the path to the file we want to give in input to the interpreter.
+*(you can use* ```test.pure``` *and* ```test1.pure```*)*
+
+![](img/Screenshots/6-Type_file.png)
+
 In this example the IMPure interpreter evaluates the factorial (the code used can be found in the file **test.pure**)
-```
-stack run
-```
-![](img/example.gif)
+
+![](img/Screenshots/7-Result1.png)
+
+In this other example the IMPure interpreter evaluates a random program with an If-then-else (the code used can be found in the file **test1.pure**)
+
+![](img/Screenshots/8-Result2.png)
+
+Have fun with IMPure!!!!!!
