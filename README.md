@@ -563,7 +563,7 @@ Once in ghci we import all the modules.
 
 ![](img/Screenshots/3-Import_modules.png)
 
-Once we have imported all the modules we type main and then press Enter!
+Once we have imported all the modules we type ```main``` and then press Enter!
 
 ![](img/Screenshots/5-IMPure.png)
 
