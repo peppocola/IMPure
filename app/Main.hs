@@ -42,9 +42,13 @@ logo = do
   putStrLn "                                        `.-/+syhhhhhhyso/:-`                               "
   putStrLn "                                                                                           "
 
-exec :: IO ()
-exec = do
-  p <- readFile "test.pure"
+main :: IO ()
+main = do
+  logo
+  putStrLn "Welcome!"
+  putStrLn "Insert the path to the file you want to use!"
+  input <- getLine;
+  p <- readFile input
   let c = parse p
   if parseFailed c
     then do
@@ -60,8 +64,3 @@ exec = do
       print (getParsedCommands c)
       putStrLn "\nState of the memory:\n"
       print s
-
-main :: IO ()
-main = do
-  logo
-  exec

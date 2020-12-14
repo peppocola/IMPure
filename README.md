@@ -318,7 +318,7 @@ instance Alternative Parser where
     P
       ( \input -> case p input of
           Nothing -> q input
-          Just (v, out) ->Just (v, out)
+          Just (v, out) -> Just (v, out)
       )
 ```
 It's useful to implement the class alternative that will allow us to concatenate more parsers and use some cool functions like many and some.
