@@ -246,7 +246,7 @@ bTerm =
   do
     b <- bFact
     symbol "and"
-    Or b <$> bexp
+    And b <$> bexp
 
 bFact :: Parser BExp
 bFact =

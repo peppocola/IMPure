@@ -38,30 +38,29 @@ while ::=      "while" "("<bexp>")" "{" <program> "}"
 
 skip ::=   "skip"
 
-aexp ::=    <aterm>
-      |     <aterm> "+" <aexp>
-      |     <aterm> "-" <aexp>
-      |     <aterm> "*" <aexp>
-      |     <aterm> "/" <aexp>
+aexp ::=    <aterm> | <aterm> "+" <aexp> | <aterm> "-" <aexp>
 
-aterm ::=   <positiveterm> | <negativeterm>
+aterm ::=   <afact> | <afact> "-" <aterm>
+
+afact ::= <positiveterm> | <negativeterm> | "(" <aexp> ")"
 
 negativeterm ::=    "-" <positiveterm>
 
-positiveterm ::=    <positivenumber> | <identifier>
+positiveterm ::=    <naturalnumber> | <identifier>
 
-bexp ::=        <truthvalue>
-      |         "not" <bexp>
-      |         <bexp> "or" <bexp>
-      |         <bexp> "and" <bexp>
-      |         <aexp> <operator> <aexp>
+bexp ::=        <bterm> | <bexp> "or" <bexp> | <comparison>
 
-truthvalue ::=    "True" | "False" | <identifier>
+bterm ::=       <bfact> "and" <bexp>
+
+bfact ::=       <truthvalue> | "not" <bexp> | "(" <bexp> ")"
+
+comparison ::=  <aexp> <operator> <aexp>
+
+truthvalue ::=    "True" | "False"
 
 operator ::=    "<" | ">" | "==" | "<=" | ">=" | "!="
 
-integer ::=   <digit>
-          |   <digit> <integer>
+naturalnumber ::=   <digit> | <digit> <integer>
 
 digit ::=     [0-9]*
 identifier ::=    [a-zA-Z_][a-zA-Z_0-9]*
@@ -353,7 +352,7 @@ aTerm =
 ```Haskell
 aFactor :: Parser AExp
 aFactor =
-  (Constant <$> naturalNumber)
+  (Constant <$> integer)
     <|> (AVariable <$> identifier)
     <|> do
       symbol "("
