@@ -10,10 +10,10 @@ type Program = [Command]
 data Command
   = AeVariableDeclaration String AExp
   | BeVariableDeclaration String BExp
-  | ArVariableDeclaration String Int
+  | ArVariableDeclaration String AExp
   | AeAssignment String AExp
   | BeAssignment String BExp
-  | ArAssignment String Int AExp
+  | ArAssignment String AExp AExp
   | IfThenElse BExp [Command] [Command]
   | While BExp [Command]
   | Skip
@@ -30,18 +30,20 @@ data Command
 data AExp
   = Constant Int
   | AVariable String
-  | AArray String Int
+  | AArray String AExp
   | Add AExp AExp
   | Sub AExp AExp
   | Mul AExp AExp
-
+  deriving Show
+{--
 instance Show AExp where
   show (Constant a) = show a
   show (AVariable a) = show a
-  show (Add a b) = show a ++ "+" ++ show b
-  show (Sub a b) = show a ++ "-" ++ show b
-  show (Mul a b) = show a ++ "*" ++ show b
-
+  show (AArray s i) = "(Array " ++ show s ++" position "++ show i ++ ")"
+  show (Add a b) = show a ++ " + " ++ show b
+  show (Sub a b) = show a ++ " - " ++ show b
+  show (Mul a b) = show a ++ " * " ++ show b
+--}
 data BExp
   = Boolean Bool
   | BVariable String

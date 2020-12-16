@@ -1,14 +1,22 @@
 program ::=   <command> | <command> <program>
 
-command ::=   <variableDeclaration> ";"
+command ::=   <aeVariableDeclaration> ";"
+          |   <beVariableDeclaration> ";"
+          |   <arVariableDeclaration> ";"
+          |   <aeAssignment> ";"
+          |   <beAssignment> ";"
+          |   <arAssignment> ";"
           |   <assignment> ";"
           |   <ifThenElse> ";"
           |   <while> ";"
           |   <skip> ";"
 
-variableDeclaration ::= "var" <identifier> "=" <aexp> ";"
-
-assignment ::=    <identifier> "=" <aexp> ";"
+aeVariableDeclaration ::=   "int" <identifier> "=" <aexp> ";"
+beVariableDeclaration ::=   "bool" <identifier> "=" <bexp> ";"
+arVariableDeclaration ::=   "array" <identifier> "=" <aexp> ";"
+aeAssignment ::=    <identifier> "=" <aexp> ";"
+beAssignment ::=    <identifier> "=" <bexp> ";"
+arAssignment ::=    <identifier> "[ <aexp> "]" "=" <aexp>
 
 ifThenElse ::=    "if" "("<bexp>")" "{" <program> "}"
             |     "if" "("<bexp>")" "{" <program>"}" "else" "{" <program> "}"
@@ -17,21 +25,23 @@ while ::=      "while" "("<bexp>")" "{" <program> "}"
 
 skip ::=   "skip"
 
-aexp ::=    <aterm> | <aterm> "+" <aexp> | <aterm> "-" <aexp>
+aexp ::=    <aterm> [{"+"|"-"} <aterm>]*
 
-aterm ::=   <afact> | <afact> "-" <aterm>
+aterm ::=   <afact> ["*" <afact>]*
 
 afact ::= <positiveterm> | <negativeterm> | "(" <aexp> ")"
+        | <identifier> "[" <aexp> "]"
 
 negativeterm ::=    "-" <positiveterm>
 
 positiveterm ::=    <naturalnumber> | <identifier>
 
-bexp ::=        <bterm> | <bexp> "or" <bexp> | <comparison>
+bexp ::=        <bterm> ["or" <bterm>]*
 
-bterm ::=       <bfact> "and" <bexp>
+bterm ::=       <bfact> ["and" <bfact>]*
 
-bfact ::=       <truthvalue> | "not" <bexp> | "(" <bexp> ")"
+bfact ::=       <truthvalue> | "not" <bexp> | "(" <bexp> ")" | <comparison>
+            |   <identifier>
 
 comparison ::=  <aexp> <operator> <aexp>
 

@@ -1,11 +1,7 @@
 int x = 1;
 int y = 5;
 int i = 1;
-array j = 2;
-int t = 1;
 while (i <= y){
     x = x*i;
     i = i + 1;
-    j[1] = 2;
-    t = j[1];
 }

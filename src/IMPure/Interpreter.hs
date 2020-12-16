@@ -23,7 +23,8 @@ aexpEval e (AVariable s) =
     Nothing -> error "UndeclearedVariable"
 aexpEval e (AArray s i) =
   case get e s of
-    Just (ArrayType a) -> Just (readArray a i)
+    Just (ArrayType a) -> Just (readArray a j)
+      where Just j = aexpEval e i 
     Just _ -> error "TypeMismatch"
     Nothing -> error "UndeclearedVariable"
 aexpEval e (Add a b) = (+) <$> aexpEval e a <*> aexpEval e b --Applicative
@@ -68,7 +69,8 @@ programExec e ((BeVariableDeclaration s ex) : cs) =
 programExec e ((ArVariableDeclaration s i) : cs) =
   case get e s of
     Just _ -> error "MultipleDeclaration"
-    Nothing -> programExec (insert e s (ArrayType (declareArray i))) cs
+    Nothing -> programExec (insert e s (ArrayType (declareArray j))) cs
+    where Just j = aexpEval e i
 programExec e ((AeAssignment s ex) : cs) =
   case get e s of
     Just (IntType _) -> programExec (insert e s (IntType ex')) cs
@@ -85,9 +87,10 @@ programExec e ((BeAssignment s ex) : cs) =
     Nothing -> error "UndeclearedVariable"
 programExec e ((ArAssignment s i ex) : cs) =
   case get e s of
-    Just (ArrayType a) -> programExec (insert e s (ArrayType (writeArray a i ex'))) cs
+    Just (ArrayType a) -> programExec (insert e s (ArrayType (writeArray a j ex'))) cs
       where
         Just ex' = aexpEval e ex
+        Just j = aexpEval e i
     Just _ -> error "TypeMismatch"
     Nothing -> error "UndeclearedVariable"
 programExec e ((IfThenElse b nc nc') : cs) =

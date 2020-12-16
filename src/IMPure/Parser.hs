@@ -7,11 +7,12 @@ newtype Parser a = P (String -> Maybe (a, String))
 -- Main function that executes the parsing, given a string written in IMPure language
 parse :: String -> ([Command], String)
 parse s = case p s of
-  Nothing -> ([],"")
-  Just (c, s) -> (c, s) 
-  where (P p) = program
-  
- {-- (first, second)
+  Nothing -> ([], "")
+  Just (c, s) -> (c, s)
+  where
+    (P p) = program
+
+{-- (first, second)
   where
     (P p) = program
     result = p s
@@ -19,14 +20,14 @@ parse s = case p s of
     second = snd (head result)
 --}
 parseFailed :: ([Command], String) -> Bool
-parseFailed (_ , "") = False
-parseFailed (_ , _) = True
+parseFailed (_, "") = False
+parseFailed (_, _) = True
 
 getParsedCommands :: ([Command], String) -> [Command]
-getParsedCommands (c , _) = c
+getParsedCommands (c, _) = c
 
 getRemainingInput :: ([Command], String) -> String
-getRemainingInput (_ , s) = s
+getRemainingInput (_, s) = s
 
 instance Functor Parser where
   fmap g (P p) =
@@ -55,13 +56,17 @@ instance Monad Parser where
             (P p) -> p out
       )
 
-class Applicative f => Alternative f where
+class Monad f => Alternative f where
   empty :: f a
   (<|>) :: f a -> f a -> f a
   many :: f a -> f [a]
   some :: f a -> f [a]
   many x = some x <|> pure []
   some x = (:) <$> x <*> many x
+  chain :: f a -> f (a -> a -> a) -> f a
+  chain p op = do a <- p; rest a
+    where
+      rest a = (do f <- op; b <- p; rest (f a b)) <|> return a
 
 --  many x = (:) <$> x <*> many x <|> pure []
 --  some x = (:) <$> x <*> (some x <|> pure [])
@@ -78,7 +83,7 @@ instance Alternative Parser where
     P
       ( \input -> case p input of
           Nothing -> q input
-          Just (v, out) ->Just (v, out)
+          Just (v, out) -> Just (v, out)
       )
 
 -- Parses a single char
@@ -202,36 +207,27 @@ symbol :: String -> Parser String
 symbol xs = token (string xs)
 
 aexp :: Parser AExp
-aexp =
-  do
-    a <- aTerm
-    do
-      symbol "+"
-      Add a <$> aexp
-      <|> do
-        symbol "-"
-        Sub a <$> aexp
-      <|> return a
+aexp = do chain aTerm op
+  where
+    op =
+      (do symbol "+"; return Add)
+        <|> do symbol "-"; return Sub
 
 aTerm :: Parser AExp
-aTerm =
-  do
-    a <- aFactor
-    do
-      symbol "*"
-      Mul a <$> aTerm
-      <|> return a
+aTerm = do chain aFactor op
+    where op = do symbol "*"; return Mul
 
 aFactor :: Parser AExp
 aFactor =
   (Constant <$> integer)
-    <|> (AVariable <$> identifier)
     <|> do
       i <- identifier
-      symbol "["
-      n <- integer
-      symbol "]"
-      return (AArray i n)
+      do
+        symbol "["
+        n <- aexp
+        symbol "]"
+        return (AArray i n)
+        <|> return (AVariable i)
     <|> do
       symbol "("
       a <- aexp
@@ -239,23 +235,17 @@ aFactor =
       return a
 
 bexp :: Parser BExp
-bexp =
-  do
-    b <- bTerm
-    do 
-      symbol "or"
-      Or b <$> bexp
-      <|> do return b
+bexp = chain bTerm op
+  where op = do
+            symbol "or"
+            return Or
 
 bTerm :: Parser BExp
-bTerm =
-  do
-    b <- bFact
-    do
-      symbol "and"
-      And b <$> bTerm
-      <|> do return b
-  
+bTerm = chain bFact op
+  where op = do
+            symbol "and"
+            return And
+
 bFact :: Parser BExp
 bFact =
   do
@@ -346,7 +336,7 @@ arVariableDeclaration =
     symbol "array"
     i <- identifier
     symbol "="
-    j <- integer
+    j <- aexp
     symbol ";"
     return (ArVariableDeclaration i j)
 
@@ -373,7 +363,7 @@ arAssignment =
   do
     i <- identifier
     symbol "["
-    j <- integer
+    j <- aexp
     symbol "]"
     symbol "="
     r <- ArAssignment i j <$> aexp

@@ -14,3 +14,4 @@ writeArray a i x =  writeArrayInner a i x (length a)
 writeArrayInner :: [Int] -> Int -> Int -> Int -> [Int]
 writeArrayInner (x:xs) i y n = if length (x:xs) == (n - i)
     then y:xs else x: writeArrayInner xs i y n
+writeArrayInner [] i y n = error "IndexOutOfBounds"
