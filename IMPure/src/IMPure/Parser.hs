@@ -1,6 +1,6 @@
 module IMPure.Parser where
 
-import IMPure.Grammar (AExp (..), BExp (..), Command (..), Operator (..) )
+import IMPure.Grammar (AExp (..), BExp (..), Command (..), Operator (..))
 
 newtype Parser a = P (String -> Maybe (a, String))
 
@@ -227,12 +227,6 @@ aFactor =
   (Constant <$> integer)
     <|> (AVariable <$> identifier)
     <|> do
-      i <- identifier
-      symbol "["
-      n <- integer
-      symbol "]"
-      return (AArray i n)
-    <|> do
       symbol "("
       a <- aexp
       symbol ")"
@@ -242,20 +236,18 @@ bexp :: Parser BExp
 bexp =
   do
     b <- bTerm
-    do 
-      symbol "or"
-      Or b <$> bexp
-      <|> do return b
+    symbol "or"
+    Or b <$> bexp
+    <|> do
+      comparison
 
 bTerm :: Parser BExp
 bTerm =
   do
     b <- bFact
-    do
-      symbol "and"
-      And b <$> bTerm
-      <|> do return b
-  
+    symbol "and"
+    And b <$> bexp
+
 bFact :: Parser BExp
 bFact =
   do
@@ -272,8 +264,6 @@ bFact =
       b <- bexp
       symbol ")"
       return b
-    <|> do comparison
-    <|> (BVariable <$> identifier)
 
 comparison :: Parser BExp
 comparison =
@@ -306,12 +296,8 @@ comparison =
 
 command :: Parser Command
 command =
-  aeVariableDeclaration
-    <|> beVariableDeclaration
-    <|> arVariableDeclaration
-    <|> aeAssignment
-    <|> beAssignment
-    <|> arAssignment
+  variableDeclaration
+    <|> assignment
     <|> ifThenElse
     <|> while
     <|> skip
@@ -320,63 +306,22 @@ program :: Parser [Command]
 program =
   do many command
 
-aeVariableDeclaration :: Parser Command
-aeVariableDeclaration =
+variableDeclaration :: Parser Command
+variableDeclaration =
   do
-    symbol "int"
+    symbol "var"
     i <- identifier
     symbol "="
-    r <- AeVariableDeclaration i <$> aexp
+    r <- VariableDeclaration i <$> aexp
     symbol ";"
     return r
 
-beVariableDeclaration :: Parser Command
-beVariableDeclaration =
-  do
-    symbol "bool"
-    i <- identifier
-    symbol "="
-    r <- BeVariableDeclaration i <$> bexp
-    symbol ";"
-    return r
-
-arVariableDeclaration :: Parser Command
-arVariableDeclaration =
-  do
-    symbol "array"
-    i <- identifier
-    symbol "="
-    j <- integer
-    symbol ";"
-    return (ArVariableDeclaration i j)
-
-aeAssignment :: Parser Command
-aeAssignment =
+assignment :: Parser Command
+assignment =
   do
     i <- identifier
     symbol "="
-    r <- AeAssignment i <$> aexp
-    symbol ";"
-    return r
-
-beAssignment :: Parser Command
-beAssignment =
-  do
-    i <- identifier
-    symbol "="
-    r <- BeAssignment i <$> bexp
-    symbol ";"
-    return r
-
-arAssignment :: Parser Command
-arAssignment =
-  do
-    i <- identifier
-    symbol "["
-    j <- integer
-    symbol "]"
-    symbol "="
-    r <- ArAssignment i j <$> aexp
+    r <- Assignment i <$> aexp
     symbol ";"
     return r
 

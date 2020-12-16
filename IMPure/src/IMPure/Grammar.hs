@@ -1,19 +1,12 @@
 -- Grammar.hs contains the structures for the internal representation of
 -- the data.
 module IMPure.Grammar where
-import IMPure.Dict (Dict)
 
-data Type = IntType Int | BoolType Bool | ArrayType [Int]
-  deriving Show
 type Program = [Command]
 
 data Command
-  = AeVariableDeclaration String AExp
-  | BeVariableDeclaration String BExp
-  | ArVariableDeclaration String Int
-  | AeAssignment String AExp
-  | BeAssignment String BExp
-  | ArAssignment String Int AExp
+  = VariableDeclaration String AExp
+  | Assignment String AExp
   | IfThenElse BExp [Command] [Command]
   | While BExp [Command]
   | Skip
@@ -30,7 +23,6 @@ data Command
 data AExp
   = Constant Int
   | AVariable String
-  | AArray String Int
   | Add AExp AExp
   | Sub AExp AExp
   | Mul AExp AExp
@@ -44,7 +36,6 @@ instance Show AExp where
 
 data BExp
   = Boolean Bool
-  | BVariable String
   | Not BExp
   | Or BExp BExp
   | And BExp BExp

@@ -31,6 +31,7 @@ library
       IMPure.Grammar
       IMPure.Interpreter
       IMPure.Parser
+      IMPure.Array
   other-modules:
       Paths_IMPure
   hs-source-dirs:

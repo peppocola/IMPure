@@ -1,6 +1,5 @@
-int x = -1;
-int y = 5;
-bool i = True ;
+var x = -1;
+var y = 5;
 if (x >= y){
     x = x + y;
 }else{
