@@ -206,6 +206,23 @@ integer = token int
 symbol :: String -> Parser String
 symbol xs = token (string xs)
 
+{--
+listParser :: Parser [Int]
+listParser = do
+  symbol "["
+  l <- many elemParser
+  symbol "]"
+  return l
+
+elemParser :: Parser Int
+elemParser = do 
+          i <- integer
+          do
+            symbol ","
+            return i
+            <|> return i
+--}
+
 aexp :: Parser AExp
 aexp = do chain aTerm op
   where
