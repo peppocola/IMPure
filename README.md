@@ -322,7 +322,7 @@ The type a is the type of value returned in case of correctly parsed input.
 We use the ```Maybe``` just to have the value of ```Nothing``` that will mean to us that the parser failed to parse.
 #### Functor, Applicative, Monad, Alternative
 We want to build a chain of parsers that will parse all the code we give in input, and to do this in haskell we will need to implement some methods:
-
+##### Functor
 ```Haskell
 instance Functor Parser where
   fmap g (P p) =
@@ -338,7 +338,7 @@ Functor in Haskell is a kind of functional representation of different types whi
 class Functor f where 
    fmap :: (a -> b) -> f a -> f b 
 ```
-
+##### Applicative
 ``` Haskell
 instance Applicative Parser where
   pure v = P (\input -> Just (v, input))
@@ -358,6 +358,7 @@ class (Functor f) => Applicative f where
    pure :: a -> f a   
    (<*>) :: f (a -> b) -> f a -> f b   
 ```
+##### Monad
 ``` Haskell
 instance Monad Parser where
   (P p) >>= f =
@@ -369,6 +370,13 @@ instance Monad Parser where
       )
 ```
 The Monad is used to apply a function that returns a wrapped parser to a wrapped parser.
+Monads apply a function that returns a wrapped value to a wrapped value. Monads have a function >>= (called bind) to do this. The monad is defined this way:
+
+```Haskell
+class Monad m where
+    (>>=) :: m a -> (a -> m b) -> m b
+```
+##### Alternative
 
 ```Haskell
 class Monad f => Alternative f where
@@ -399,10 +407,10 @@ instance Alternative Parser where
       )
 ```
 It's useful to implement the class alternative that will allow us to concatenate more parsers and use some cool functions like many and some.
-If we have two parsers P and Q, husing te ```<|>```, if the first fails we will get as output the output of the second parser, else we will get the output of the first. We also implement the chain operator which let us use the leftmost associative property of arithmetic expressions. Without the chain operator, we can have really messy results like:
+If we have two parsers P and Q, using the ```<|>```, if the first fails we will get as output the output of the second parser, else we will get the output of the first. We also implement the chain operator which let us use the leftmost associative property of arithmetic expressions. Without the chain operator, we can have really messy results like:
 ```Haskell
->>> int n=1+1-1-1
->>> 2
+>>> int n = 1+1-1-1
+>>> "n" = 2
 ```
 The chain method definition can be found on "Monadic Parsing in Haskell" by Grahm Hutton.
 #### Arithmetic Expression Parsing
