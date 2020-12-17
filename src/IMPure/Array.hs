@@ -9,9 +9,5 @@ readArray [] _  = error "IndexOutOfBounds"
 readArray n i = n!!i
 
 writeArray :: [Int] -> Int -> Int -> [Int]
-writeArray a i x =  writeArrayInner a i x (length a)
-
-writeArrayInner :: [Int] -> Int -> Int -> Int -> [Int]
-writeArrayInner (x:xs) i y n = if length (x:xs) == (n - i)
-    then y:xs else x: writeArrayInner xs i y n
-writeArrayInner [] i y n = error "IndexOutOfBounds"
+writeArray (a:as) 0 x =  x : as
+writeArray (a:as) i x =  a : writeArray as (i-1) x

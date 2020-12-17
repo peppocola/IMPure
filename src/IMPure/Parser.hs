@@ -12,13 +12,6 @@ parse s = case p s of
   where
     (P p) = program
 
-{-- (first, second)
-  where
-    (P p) = program
-    result = p s
-    first = fst (head result)
-    second = snd (head result)
---}
 parseFailed :: ([Command], String) -> Bool
 parseFailed (_, "") = False
 parseFailed (_, _) = True
