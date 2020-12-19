@@ -376,6 +376,10 @@ Monads apply a function that returns a wrapped value to a wrapped value. Monads 
 class Monad m where
     (>>=) :: m a -> (a -> m b) -> m b
 ```
+
+In our case, we have a ```Parser a``` and a function ``` a -> m b```. With the monad we specify the behaviour of the program in the case we want to apply the function to a wrapped parser, even if the function accepts only the type ```a```.
+Thanks to the monad implementation we are able to use the return and do statements.
+
 ##### Alternative
 
 ```Haskell

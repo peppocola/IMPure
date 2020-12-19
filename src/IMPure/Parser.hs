@@ -41,6 +41,7 @@ instance Applicative Parser where
       )
 
 instance Monad Parser where
+  --(>>=) :: m a -> (a -> m b) -> m b
   (P p) >>= f =
     P
       ( \input -> case p input of
