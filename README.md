@@ -686,7 +686,6 @@ getRemainingInput (_ , s) = s
 
 Here are some operation to use the parser.
 The parse method parses an entire program and returns as output the list of commands written in the internal representation and the string of unconsumed output. If this string is not empty, the parsing failed!
-<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
 # Execution Example
 First, we run the shell in the folder of the project.
 
@@ -698,7 +697,7 @@ Then we type ghci.
 
 Once in ghci we import all the modules.
 
-***:l app/Main.hs src/IMPure/Dict.hs src/IMPure/Grammar.hs src/IMPure/Interpreter.hs src/IMPure/Parser.hs***
+***:l app/Main.hs src/IMPure/Array.hs src/IMPure/Dict.hs src/IMPure/Grammar.hs src/IMPure/Interpreter.hs src/IMPure/Parser.hs***
 
 (type this all in a single line!)
 
