@@ -6,6 +6,38 @@
 A simple interpreter for the IMP language written in Haskell.
 This parser-interpreter was realized for the course of "**Formal Method for Computer Science**" by Giuseppe Colavito.
 
+# Table of Contents
+- [😈IMPure😈](#impure)
+- [Table of Contents](#table-of-contents)
+- [Examples of code](#examples-of-code)
+    - [A working code](#a-working-code)
+    - [Declaring variables](#declaring-variables)
+      - [Integers](#integers)
+      - [Booleans](#booleans)
+      - [Arrays](#arrays)
+    - [Updating Variables](#updating-variables)
+- [Design](#design)
+- [Implementation](#implementation)
+    - [Environment Management](#environment-management)
+    - [Internal structures](#internal-structures)
+      - [Array handling](#array-handling)
+    - [Interpreter Implementation](#interpreter-implementation)
+      - [Arithmetic expression evaluation](#arithmetic-expression-evaluation)
+      - [Boolean expression evaluation](#boolean-expression-evaluation)
+      - [Commands Execution](#commands-execution)
+    - [Parser Implementation](#parser-implementation)
+      - [Parser Type](#parser-type)
+      - [Functor, Applicative, Monad, Alternative](#functor-applicative-monad-alternative)
+        - [Functor](#functor)
+        - [Applicative](#applicative)
+        - [Monad](#monad)
+        - [Alternative](#alternative)
+      - [Arithmetic Expression Parsing](#arithmetic-expression-parsing)
+      - [Boolean Expression Parsing](#boolean-expression-parsing)
+      - [Commands Parsing](#commands-parsing)
+      - [Program Parsing](#program-parsing)
+- [Execution Example](#execution-example)
+
 IMP is a simple imperative language. It is composed by these basic structures:
 <ul>
 <li>Assignment : assign a value to a variable</li> 
@@ -73,6 +105,41 @@ naturalnumber ::=   <digit> | <digit> <integer>
 
 digit ::=     [0-9]*
 identifier ::=    [a-zA-Z_][a-zA-Z_0-9]*
+```
+# Examples of code
+### A working code
+```
+int x = 1;
+int y = 5;
+int i = 1;
+while (i <= y){
+    x = x*i;
+    i = i + 1;
+}
+```
+This is an example of code for evaluating the factorial of 5. (It will be saved in x)
+### Declaring variables
+#### Integers
+```
+int j = 1;
+int i = 1-1-1+1;
+```
+#### Booleans
+```
+bool y = True;
+bool x = False;
+```
+#### Arrays
+```
+array t = 2;
+```
+This instruction is used to declare an array of fixed lenght (2)
+### Updating Variables
+```
+j = 2;
+y = False;
+t[1] = 1;
+t[0] = -1;
 ```
 
 # Design 
@@ -185,6 +252,26 @@ A boolean expression could be a boolean constant, a boolean variable, an operati
 The available operations on boolean expressions are not, or and and.
 The available comparison operators are less-then, less-equal, greater-then, greater-equal, equal, not-equal.
 
+#### Array handling
+To handle arrays and represent it during the interpretation of the program, an Haskell list is used.
+Some basic function are implemented to declare and update an array:
+
+```Haskell
+declareArray :: Int -> [Int]
+declareArray 0 = []
+declareArray n = 0 : declareArray (n-1)
+
+readArray :: [Int] -> Int -> Int 
+readArray [] _  = error "IndexOutOfBounds"
+readArray n i = n!!i
+
+writeArray :: [Int] -> Int -> Int -> [Int]
+writeArray (a:as) 0 x =  x : as
+writeArray (a:as) i x =  a : writeArray as (i-1) x
+```
+Basically declaring an array means choosing the fixed dimension of it and setting every value to 0 by default.
+It is then possible to write and read on the arrays cell one per time.
+
 ### Interpreter Implementation
 To implement all of the constructs of the IMP language, the interpreter will have to evaluate arithmetic expressions, boolean expressions and the commands we talked about (eg. if, while, ...). 
 The results of the evaluation  of the interpreter are wrapped in a *Maybe* type.
@@ -192,6 +279,7 @@ This way we can easly represent failures and use the ```error``` function to int
 
 #### Arithmetic expression evaluation
 The interpreter can evaluate an arithmetic expression given an environment and an *AExp* (that is defined in the internal structures). The output can be a ```Just Int``` or an ```Nothing```. This evaluation is implemented using Functor(<$>) and Applicative (<*>).
+Since an arithmetic expression can contain variables or cells of an array, we will have to check in the environment their values to use it.
 
 ```Haskell
 aexpEval :: Env -> AExp -> Maybe Int
@@ -213,7 +301,7 @@ aexpEval e (Mul a b) = (*) <$> aexpEval e a <*> aexpEval e b
 ```
 
 #### Boolean expression evaluation
-The interpreter can evaluate a boolean expression given an environment and a *BExp* (that is defined in the internal structures). The output can be a ```Just Bool``` or an ```Nothing```. This evaluation is implemented again using Functor(```<$>```) and Applicative (```<*>```).
+The interpreter can evaluate a boolean expression given an environment and a *BExp* (that is defined in the internal structures). The output can be a ```Just Bool``` or an ```Nothing```. This evaluation is implemented again using Functor(```<$>```) and Applicative (```<*>```). A boolean expression can be also made of variables so it is important to check if the variables are declared and their values in the environment.
 ```Haskell
 bexpEval :: Env -> BExp -> Maybe Bool
 bexpEval _ (Boolean b) = Just b
@@ -295,21 +383,8 @@ programExec e ((While b c) : cs) =
 And here is our interpreter. If we give in input a program (written as the internal representation of the program of the interpreter), the interpreter will evaluate the program and give us in output the state of the memory at the end of the program!
 If something goes wrong, the execution gets interrupted and some basic information about the error are shown.
 
-This is how a legal input for the interpreter looks like. At the end of the computation, x will be the result of the factorial of 5.
-
-```Haskell
-          [ VariableDeclaration "i" (Constant 1),
-            VariableDeclaration "n" (Constant 5),
-            VariableDeclaration "x" (Constant 1),
-            While
-              (Comparison (AVariable "i") (AVariable "n") Le)
-              [ Assignment "x" (Mul (AVariable "x") (AVariable "i")),
-                Assignment "i" (Add (AVariable "i") (Constant 1))
-              ]
-          ]
-```
-Of course this "language" is too hard to write and understand. For more complex programs it would be really heavy to read and write.
-To avoid this problems we define a more friendly language and implement a parser that will transform the new language in the language of the interpreter.
+Of course the "language" that the interpreter can understand is too hard to write and understand for humans. For more complex programs it would be really heavy to read and write.
+To avoid this problems we define a more friendly language and implement a parser that will transform the IMPure language in the language of the interpreter.
  
 ### Parser Implementation
 #### Parser Type
